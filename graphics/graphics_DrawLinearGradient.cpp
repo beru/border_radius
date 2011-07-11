@@ -34,16 +34,6 @@ uint32_t orderedDither(uint16_t x, uint16_t y, uint32_t c)
 	return r | g<<8 | b<<16;
 }
 
-uint16_t to16BitColor(uint32_t c)
-{
-	uint16_t r,g,b;
-	r = getR(c);
-	g = getG(c);
-	b = getB(c);
-	uint16_t ret = r>>3 | ((g>>2)<<5) | ((b>>3)<<11);
-	return ret;
-}
-
 struct Color
 {
 	Color()

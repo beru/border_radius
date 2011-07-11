@@ -222,6 +222,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphics\graphics_DrawRectangle.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\graphics_impl_common.h"
 				>
 			</File>

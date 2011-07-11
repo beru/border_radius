@@ -1,6 +1,6 @@
 #include "graphics_impl_common.h"
 
-uint16_t global_lcd_framebuffer[320][240];
+uint16_t global_lcd_framebuffer[320*240];
 
 void PutPixel(uint16_t x, uint16_t y, uint32_t color)
 {

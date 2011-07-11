@@ -6,18 +6,20 @@
 const uint16_t WIDTH = 320;
 const uint16_t HEIGHT = 240;
 
-extern uint16_t global_lcd_framebuffer[320][240];
-
-static inline
-uint16_t* getPixelPtr(uint16_t x, uint16_t y)
-{
-	return &global_lcd_framebuffer[y][x];
-}
+extern uint16_t global_lcd_framebuffer[320*240];
 
 static inline
 int getLineOffset()
 {
 	return 320 * sizeof(uint16_t);
+}
+
+static inline
+uint16_t* getPixelPtr(uint16_t x, uint16_t y)
+{
+	uint16_t* ptr = &global_lcd_framebuffer[x];
+	OffsetPtr(ptr, getLineOffset()*y);
+	return ptr;
 }
 
 static inline
