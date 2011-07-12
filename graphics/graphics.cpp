@@ -2,6 +2,8 @@
 
 uint16_t global_lcd_framebuffer[320*240];
 
+namespace Graphics {
+
 void PutPixel(uint16_t x, uint16_t y, uint32_t color)
 {
 	*getPixelPtr(x, y) = to16BitColor(color);
@@ -9,14 +11,7 @@ void PutPixel(uint16_t x, uint16_t y, uint32_t color)
 
 void FillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint32_t color)
 {
-	uint16_t* ptr = getPixelPtr(x, y);
-	uint16_t sc = to16BitColor(color);
-	for (uint16_t y=0; y<h; ++y) {
-		for (uint16_t x=0; x<w; ++x) {
-			ptr[x] = sc;
-		}
-		OffsetPtr(ptr, getLineOffset());
-	}
+	fillSolidRectangle(x, y, w, h, color);
 }
 
 void DrawHorizontalLine(uint16_t x1, uint16_t x2, uint16_t y, uint32_t color)
@@ -93,4 +88,6 @@ void DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color
 		}
 	}
 }
+
+} // namespace Graphics
 
