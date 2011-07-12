@@ -2,7 +2,7 @@
 
 namespace {
 
-uint32_t tmpBuff[WIDTH];
+uint32_t tmpBuff[WIDTH][3];
 
 uint8_t getR(uint32_t c)
 {
@@ -19,19 +19,46 @@ uint8_t getB(uint32_t c)
 	return c >> 16;
 }
 
-uint32_t orderedDither(uint16_t x, uint16_t y, uint32_t c)
+template <int SHIFTNUM>
+uint16_t orderedDither(uint16_t x, uint16_t y, int32_t r, int32_t g, int32_t b)
 {
-//	return c;
+
+#if 0
 	static const uint8_t thresholds[2][2] = {
 		1,3,
 		4,2,
 	};
-	uint16_t r,g,b;
-	uint8_t amp = thresholds[y%2][x%2];
-	r = min(0xFF, getR(c)+amp) & 0xFC;
-	g = min(0xFF, getG(c)+amp) & 0xFC;
-	b = min(0xFF, getB(c)+amp) & 0xFC;
-	return r | g<<8 | b<<16;
+	int32_t t = thresholds[y%2][x%2] - 2;
+#elif 1
+	static const int8_t thresholds[4][4] = {
+		1,9,3,11,
+		13,5,15,7,
+		4,12,2,10,
+		16,8,14,6,
+	};
+	int32_t t = (thresholds[y%4][x%4] - 8);
+#else
+	uint32_t t = 0;
+#endif
+	r += t << (SHIFTNUM - 1);
+	g += t << (SHIFTNUM - 2);
+	b += t << (SHIFTNUM - 1);
+	
+	r += 1 << (SHIFTNUM+2);
+	g += 1 << (SHIFTNUM+1);
+	b += 1 << (SHIFTNUM+2);
+
+	r = max(0, r);
+	g = max(0, g);
+	b = max(0, b);
+	r = min(r, (1<<SHIFTNUM+8)-1);
+	g = min(g, (1<<SHIFTNUM+8)-1);
+	b = min(b, (1<<SHIFTNUM+8)-1);
+
+	r >>= SHIFTNUM+3;
+	g >>= SHIFTNUM+2;
+	b >>= SHIFTNUM+3;
+	return r | g<<5 | b<<11;
 }
 
 struct Color
@@ -133,36 +160,41 @@ void linearGradient_Horizontal(
 		swap(x1, x2);
 		swap(v1, v2);
 	}
-	uint32_t* tmpl = tmpBuff;
+	uint32_t r1,g1,b1, r2,g2,b2;
+	r1 = getR(v1) << 16;
+	g1 = getG(v1) << 16;
+	b1 = getB(v1) << 16;
+	r2 = getR(v2) << 16;
+	g2 = getG(v2) << 16;
+	b2 = getB(v2) << 16;
 	for (uint16_t x=0; x<=x1; ++x) {
-		tmpl[x] = v1;
+		tmpBuff[x][0] = r1;
+		tmpBuff[x][1] = g1;
+		tmpBuff[x][2] = b1;
 	}
 	
 	int dx = x2 - x1;
-	Color va(getR(v2), getG(v2), getB(v2));
-	Color v(getR(v1), getG(v1), getB(v1));
+	Color va(r2, g2, b2);
+	Color v(r1, g1, b1);
 	va -= v;
-	va <<= 16;
 	va /= dx;
-	v <<= 16;
 	for (uint16_t x=x1; x<x2; ++x) {
-		uint8_t r,g,b;
-		r = v.v[0] >> 16;
-		g = v.v[1] >> 16;
-		b = v.v[2] >> 16;
-		tmpl[x] = r | g<<8 | b<<16;
+		tmpBuff[x][0] = v.v[0];
+		tmpBuff[x][1] = v.v[1];
+		tmpBuff[x][2] = v.v[2];
 		v += va;
 	}
 	for (uint16_t x=x2; x<WIDTH; ++x) {
-		tmpl[x] = v2;
+		tmpBuff[x][0] = r2;
+		tmpBuff[x][1] = g2;
+		tmpBuff[x][2] = b2;
 	}
 	
 	uint16_t* pLine = getPixelPtr(0, 0);
 	for (uint16_t y=0; y<HEIGHT; ++y) {
 		uint16_t* buffl = pLine;
 		for (uint16_t x=0; x<WIDTH; ++x) {
-			buffl[x] = to16BitColor(orderedDither(x,y,tmpl[x]));
-//			buffl[x] = tmpl[x];
+			buffl[x] = orderedDither<16>(x,y,tmpBuff[x][0],tmpBuff[x][1],tmpBuff[x][2]);
 		}
 		OffsetPtr(pLine, getLineOffset());
 	}
@@ -178,34 +210,34 @@ void linearGradient_Vertical(
 		swap(v1, v2);
 	}
 	uint16_t* pLine = getPixelPtr(0, 0);
+	uint32_t r1,g1,b1, r2,g2,b2;
+	r1 = getR(v1) << 16;
+	g1 = getG(v1) << 16;
+	b1 = getB(v1) << 16;
+	r2 = getR(v2) << 16;
+	g2 = getG(v2) << 16;
+	b2 = getB(v2) << 16;
 	for (uint16_t y=0; y<y1; ++y) {
-		for (uint16_t x=0; x<WIDTH; ++x) pLine[x] = to16BitColor(orderedDither(x,y,v1));
+		for (uint16_t x=0; x<WIDTH; ++x) pLine[x] = orderedDither<16>(x,y,r1,g1,b1);
 		OffsetPtr(pLine, getLineOffset());
 	}
 	
 	int dy = y2 - y1;
-	Color va(getR(v2), getG(v2), getB(v2));
-	Color v(getR(v1), getG(v1), getB(v1));
+	Color va(r2, g2, b2);
+	Color v(r1, g1, b1);
 	va -= v;
-	va <<= 16;
 	va /= dy;
-	v <<= 16;
 	int16_t ye = min(y2, (int16_t)HEIGHT);
 	for (uint16_t y=y1; y<ye; ++y) {
-		uint8_t r,g,b;
-		r = v.v[0] >> 16;
-		g = v.v[1] >> 16;
-		b = v.v[2] >> 16;
-		uint32_t c = r | g<<8 | b<<16;
 		for (uint16_t x=0; x<WIDTH; ++x) {
-			pLine[x] = to16BitColor(orderedDither(x,y,c));
+			pLine[x] = orderedDither<16>(x,y,v.v[0],v.v[1],v.v[2]);
 		}
 		OffsetPtr(pLine, getLineOffset());
 		v += va;
 	}
 	
 	for (uint16_t y=ye; y<HEIGHT; ++y) {
-		for (uint16_t x=0; x<WIDTH; ++x) pLine[x] = to16BitColor(orderedDither(x,y,v2));
+		for (uint16_t x=0; x<WIDTH; ++x) pLine[x] = orderedDither<16>(x,y,r2,g2,b2);
 		OffsetPtr(pLine, getLineOffset());
 	}
 }
@@ -220,8 +252,15 @@ void linearGradient(
 		swap(y1, y2);
 		swap(v1, v2);
 	}
-	int16_t a = x2 - x1;
-	int16_t b = y2 - y1;
+	uint32_t r1,g1,b1, r2,g2,b2;
+	r1 = getR(v1) << 16;
+	g1 = getG(v1) << 16;
+	b1 = getB(v1) << 16;
+	r2 = getR(v2) << 16;
+	g2 = getG(v2) << 16;
+	b2 = getB(v2) << 16;
+	int a = x2 - x1;
+	int b = y2 - y1;
 	int c1 = a * x1 + b * y1;
 	int c2 = a * x2 + b * y2;
 	Color ov1(v1);
@@ -229,11 +268,11 @@ void linearGradient(
 	Color vc = ov1 * c2 - ov2 * c1;
 	Color dv = ov2 - ov1;
 	int dc = c2 - c1;
-	int idc = 0xffffff / dc;
-	Color adv = dv * (int)a;
+	int idc = 0x3FFFFF / dc;
+	Color adv = dv * a;
 	assert(c2 >= c1);
 	int c0 = 0;
-	Color bdv = dv * (int)b;
+	Color bdv = dv * b;
 	Color cdv = vc;
 	uint16_t* pLine = getPixelPtr(0, 0);
 
@@ -244,21 +283,17 @@ void linearGradient(
 		int16_t x2e = min( WIDTH - (c0+a*WIDTH - c2) / a, (int)WIDTH);
 		if (x1e > 0) {
 			for (; x<x1e; ++x) {
-				pLine[x] = to16BitColor(orderedDither(x,y,v1));
+				pLine[x] = orderedDither<16>(x,y,r1,g1,b1);
 			}
 			cdv2 += adv * (x1e+1);
 		}
-		for (; x<x2e-1; ++x) {
-			uint8_t r,g,b;
+		for (; x<x2e; ++x) {
 			Color n = cdv2 * idc;
-			r = n.v[0] >> 24;
-			g = n.v[1] >> 24;
-			b = n.v[2] >> 24;
-			pLine[x] = to16BitColor(orderedDither(x,y,r | g<<8 | b<<16));
+			pLine[x] = orderedDither<22>(x,y,n.v[0],n.v[1],n.v[2]);
 			cdv2 += adv;
 		}
 		for (; x<WIDTH; ++x) {
-			pLine[x] = to16BitColor(orderedDither(x,y,v2));
+			pLine[x] = orderedDither<16>(x,y,r2,g2,b2);
 		}
 		OffsetPtr(pLine, getLineOffset());
 		c0 += b;
@@ -268,6 +303,7 @@ void linearGradient(
 
 } // namespace anonymous
 
+namespace Graphics {
 
 void DrawLinearGradient(int16_t x1, int16_t y1, uint32_t v1, int16_t x2, int16_t y2, uint32_t v2)
 {
@@ -280,3 +316,4 @@ void DrawLinearGradient(int16_t x1, int16_t y1, uint32_t v1, int16_t x2, int16_t
 	}
 }
 
+} // namespace Graphics

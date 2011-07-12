@@ -50,6 +50,13 @@ T min(T a, T b)
 
 template <typename T>
 static inline
+T max(T a, T b)
+{
+	return a>b ? a : b;
+}
+
+template <typename T>
+static inline
 T abs(T a)
 {
 	return a<0 ? -a:a;
