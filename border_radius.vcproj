@@ -218,6 +218,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphics\graphics_DrawCircle.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\graphics_DrawLinearGradient.cpp"
 				>
 			</File>

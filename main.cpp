@@ -16,7 +16,11 @@ int main(int argc, char* argv[])
 		Graphics::DrawRectangle(200,100-10*i, 100,100, 0x4F6F9F, bs);
 	}
 #endif
-
+	
+	for (uint8_t i=0; i<100; i+=4) {
+		Graphics::DrawCircle(100, 100, i, -1);
+	}
+	
 	return 0;
 }
 

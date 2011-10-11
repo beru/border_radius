@@ -32,6 +32,12 @@ uint16_t to16BitColor(uint32_t color)
 	return c;
 }
 
+static inline
+void putPixel(uint16_t x, uint16_t y, uint32_t color)
+{
+	*getPixelPtr(x, y) = to16BitColor(color);
+}
+
 template <typename T>
 static inline
 void swap(T& a, T& b)
