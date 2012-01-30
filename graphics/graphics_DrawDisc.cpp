@@ -14,6 +14,8 @@ void blendPixel(pixel_t& pixel, uint32_t color, uint16_t opacity)
 }
 
 // TODO: 左上の面のAlpha情報だけを計算し、後で描画時にそのBlending情報を利用する。
+// 左右の反転は読み出しポインタをデクリメントすればOK
+// 上下の反転は読み出しラインを変えればOK
 
 // Antialiased, Filled apart from center pixel:
 // original : http://mines.lumpylumpy.com/Electronics/Computers/Software/Cpp/Graphics/Bitmap/Drawing/CircleStencil.php
@@ -43,10 +45,10 @@ void Disc(int16_t xCenter, int16_t yCenter, int16_t diameter, uint32_t color)
 				continue;
 			}
 			const uint16_t opacity = (diff * invRadius2) >> FIXEDPOINT_SHIFTS;
-			blendPixel(lineYMinus[0], color, opacity);
-			blendPixel(lineYCenter[-y], color, opacity);
-//			blendPixel(lineYCenter[+y], color, opacity);
-//			blendPixel(lineYPlus[0], color, opacity);
+			blendPixel(lineYMinus[0], color, opacity);	// N
+			blendPixel(lineYCenter[-y], color, opacity); // W
+//			blendPixel(lineYCenter[+y], color, opacity); // E
+//			blendPixel(lineYPlus[0], color, opacity);	// S
 		}
 		const int32_t remain = radius2 - y2;
 		const uint16_t remainRoot = sqrt((double)remain);
@@ -65,16 +67,16 @@ void Disc(int16_t xCenter, int16_t yCenter, int16_t diameter, uint32_t color)
 			const uint32_t opacity = multipliedDiff >> FIXEDPOINT_SHIFTS;
 			multipliedDiff -= diff2;
 			diff2 += diff2Add;
-			blendPixel(lineYMinus[-x], color, opacity);
-//			blendPixel(lineYMinus[+x], color, opacity);
-//			blendPixel(lineYPlus[-x], color, opacity);
-//			blendPixel(lineYPlus[+x], color, opacity);
+			blendPixel(lineYMinus[-x], color, opacity);	// NNW
+//			blendPixel(lineYMinus[+x], color, opacity); // NNE
+//			blendPixel(lineYPlus[-x], color, opacity); // SSW
+//			blendPixel(lineYPlus[+x], color, opacity); // SSE
 			OffsetPtr(lineXMinus, -lineOffset);
 			OffsetPtr(lineXPlus, +lineOffset);
-			blendPixel(lineXMinus[-y], color, opacity);
-//			blendPixel(lineXMinus[+y], color, opacity);
-//			blendPixel(lineXPlus[-y], color, opacity);
-//			blendPixel(lineXPlus[+y], color, opacity);
+			blendPixel(lineXMinus[-y], color, opacity); // WNW
+//			blendPixel(lineXMinus[+y], color, opacity); // ENE
+//			blendPixel(lineXPlus[-y], color, opacity); // WSW
+//			blendPixel(lineXPlus[+y], color, opacity); // SSW
 		}
 		// x == y
 		{
@@ -84,10 +86,10 @@ void Disc(int16_t xCenter, int16_t yCenter, int16_t diameter, uint32_t color)
 				continue;
 			}
 			const uint16_t opacity = (diff * invRadius2) >> FIXEDPOINT_SHIFTS;
-			blendPixel(lineYMinus[-y], color, opacity);	// upper left
-//			blendPixel(lineYMinus[+y], color, opacity); // upper right
-//			blendPixel(lineYPlus[-y], color, opacity); // bottom left
-//			blendPixel(lineYPlus[+y], color, opacity); // bottom right
+			blendPixel(lineYMinus[-y], color, opacity);	// NW
+//			blendPixel(lineYMinus[+y], color, opacity); // NE
+//			blendPixel(lineYPlus[-y], color, opacity); // SW
+//			blendPixel(lineYPlus[+y], color, opacity); // SE
 		}
 	}
 }

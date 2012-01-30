@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
 	
 	Timer t;
-	Graphics::DrawDisc(240, 240, 300, -1);
+	Graphics::DrawDisc(240, 240, 480, -1);
 	printf("%f\n", t.ElapsedSecond()*1000);
 	return 0;
 }
