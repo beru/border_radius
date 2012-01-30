@@ -190,9 +190,9 @@ void linearGradient_Horizontal(
 		tmpBuff[x][2] = b2;
 	}
 	
-	uint16_t* pLine = getPixelPtr(0, 0);
+	pixel_t* pLine = getPixelPtr(0, 0);
 	for (uint16_t y=0; y<HEIGHT; ++y) {
-		uint16_t* buffl = pLine;
+		pixel_t* buffl = pLine;
 		for (uint16_t x=0; x<WIDTH; ++x) {
 			buffl[x] = orderedDither<16>(x,y,tmpBuff[x][0],tmpBuff[x][1],tmpBuff[x][2]);
 		}
@@ -209,7 +209,7 @@ void linearGradient_Vertical(
 		swap(y1, y2);
 		swap(v1, v2);
 	}
-	uint16_t* pLine = getPixelPtr(0, 0);
+	pixel_t* pLine = getPixelPtr(0, 0);
 	uint32_t r1,g1,b1, r2,g2,b2;
 	r1 = getR(v1) << 16;
 	g1 = getG(v1) << 16;
@@ -274,7 +274,7 @@ void linearGradient(
 	int c0 = 0;
 	Color bdv = dv * b;
 	Color cdv = vc;
-	uint16_t* pLine = getPixelPtr(0, 0);
+	pixel_t* pLine = getPixelPtr(0, 0);
 
 	for (uint16_t y=0; y<HEIGHT; ++y) {
 		Color cdv2 = cdv;

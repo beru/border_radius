@@ -117,12 +117,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="./"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ForcedIncludeFiles="common.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -140,6 +142,7 @@
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -196,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\timer.h"
+				>
+			</File>
+			<File
 				RelativePath=".\trace.h"
 				>
 			</File>
@@ -219,6 +226,10 @@
 			</File>
 			<File
 				RelativePath=".\graphics\graphics_DrawCircle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\graphics\graphics_DrawDisc.cpp"
 				>
 			</File>
 			<File

@@ -1,5 +1,7 @@
 #include "trace.h"
 
+#if defined(_DEBUG) || defined(DEBUG)
+
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
@@ -24,3 +26,4 @@ void DbgStr::operator() ( const wchar_t* pszFormat, ...)
 	OutputDebugStringW( pszBuf);
 }
 
+#endif

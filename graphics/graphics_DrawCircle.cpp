@@ -120,6 +120,41 @@ void CircleMidpoint (int xc, int yc, uint16_t diameter, int color)
 }
 
 // http://willperone.net/Code/codecircle.php
+// slightly faster algorithm posted by coyote
+void FilledCircleMidpoint (int xc, int yc, uint16_t diameter, int color)
+{
+	uint16_t r = diameter / 2;
+	int x= 0;
+	int y= r;
+	int d= (2 - diameter) / 2 ;
+	int dE= 3;
+	int dSE= 5 - diameter ;
+	int diff_dSE_dE= dSE - dE ;
+
+	if (!r) return;
+	DrawHorizontalLine(xc-r, xc+r, yc, color);
+	putPixel(xc, yc-r, color);
+	putPixel(xc, yc+r, color);
+	
+	while (y > x)    //only formulate 1/8 of circle
+	{
+		if( d >= 0 ) {
+			d += diff_dSE_dE ;
+			diff_dSE_dE += 2 ;
+			--y ;
+		}
+		d += dE ;
+		dE += 2 ;
+		++x ;
+		
+		DrawHorizontalLine(xc-x, xc+x, yc-y, color);
+		DrawHorizontalLine(xc-y, xc+y, yc-x, color);
+		DrawHorizontalLine(xc-y, xc+y, yc+x, color);
+		DrawHorizontalLine(xc-x, xc+x, yc+y, color);
+	}
+}
+
+// http://willperone.net/Code/codecircle.php
 void CircleOptimized (int xc, int yc, uint16_t diameter, int color)
 {
 	uint16_t r = diameter / 2;
@@ -238,9 +273,103 @@ void DrawNewCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 	NewCircleAlgorithm (diameter, p, color);
 }
 
+// TODO: 描画は後でやる。段の移動情報だけ記録して、描画は一気呵成にした方が効率が良いだろう。
+
+void OstCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+{
+	int r = diameter / 2;
+	int x = r;
+	int y = 0;
+	int d = 1 - r; // Pd has been initialised
+	int dy = 1; // Pdy has been initialised
+	int dxy = diameter - 1; // Pdxy has been initialised
+
+	putPixel (cx-r, cy, color);
+	putPixel (cx+r, cy, color);
+	putPixel (cy, cx-r, color);
+	putPixel (cy, cx+r, color);
+	if (diameter <= 9) {
+		while (dxy > 0) {
+			y++;
+			dy += 2;
+			if (d < 0) { // select axial or diagonal move
+				dxy -= 2; //increment like phase
+				d += dy;
+			}else {
+				x--;
+				dxy -= 4; //increment like phase
+				d -= dxy;
+			}
+			putPixel (cx-x, cx-y, color);
+			putPixel (cx+x, cx-y, color);
+			putPixel (cx-y, cx-x, color);
+			putPixel (cx+y, cx-x, color);
+			putPixel (cx-x, cx+y, color);
+			putPixel (cx+x, cx+y, color);
+			putPixel (cx-y, cx+x, color);
+			putPixel (cx+y, cx+x, color);
+
+		}
+	}else {
+		// 分岐が少ない版
+SA:
+		y++;
+		putPixel (cx-x, cx-y, color);
+		putPixel (cx+x, cx-y, color);
+		putPixel (cx-y, cx-x, color);
+		putPixel (cx+y, cx-x, color);
+		putPixel (cx-x, cx+y, color);
+		putPixel (cx+x, cx+y, color);
+		putPixel (cx-y, cx+x, color);
+		putPixel (cx+y, cx+x, color);
+
+		dxy -= 2;
+		dy += 2;
+		d += dy;
+		if (d < 0) {
+			goto SA;
+		}
+SD:
+		x--;
+		y++;
+		putPixel (cx-x, cx-y, color);
+		putPixel (cx+x, cx-y, color);
+		putPixel (cx-y, cx-x, color);
+		putPixel (cx+y, cx-x, color);
+		putPixel (cx-x, cx+y, color);
+		putPixel (cx+x, cx+y, color);
+		putPixel (cx-y, cx+x, color);
+		putPixel (cx+y, cx+x, color);
+		
+		dxy -= 4;
+		if (dxy <= 0) {
+			return;
+		}
+		dy += 2;
+		d -= dxy;
+		if (d < 0) {
+			goto SA;
+		}else {
+			goto SD;
+		}
+	}
+}
+
 void DrawCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 {
-	CircleMidpoint (cx, cy, diameter, color);
+//	drawCircle1
+//	drawCircle2
+//	drawCircle3
+//	CircleMidpoint
+//	CircleOptimized
+//	BanuDrawCircle
+	DrawNewCircle
+		(cx, cy, diameter, color);
+}
+
+void DrawFilledCircle(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+{
+	FilledCircleMidpoint (cx, cy, diameter, color);
 }
 
 } // namespace Graphics

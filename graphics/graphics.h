@@ -20,7 +20,9 @@ struct BorderStyle
 
 void DrawRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t color, const BorderStyle& border);
 
-void DrawCircle(int16_t cx, int16_t cy, uint16_t r, uint32_t color);
+void DrawCircle(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color);
+void DrawFilledCircle(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color);
+void DrawDisc(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color);
 
 } // namespace Graphics
 

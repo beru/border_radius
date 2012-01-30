@@ -1,6 +1,6 @@
 #include "graphics_impl_common.h"
 
-uint16_t global_lcd_framebuffer[320*240];
+pixel_t global_lcd_framebuffer[WIDTH*HEIGHT];
 
 namespace Graphics {
 
@@ -21,8 +21,8 @@ void DrawHorizontalLine(int16_t x1, int16_t x2, int16_t y, uint32_t color)
 		x1 = x2;
 		x2 = tmp;
 	}
-	uint16_t* ptr = getPixelPtr(x1, y);
-	uint16_t sc = to16BitColor(color);
+	pixel_t* ptr = getPixelPtr(x1, y);
+	pixel_t sc = to_pixel_t(color);
 	for (uint16_t x=x1; x<x2; ++x) {
 		*ptr = sc;
 		++ptr;
@@ -36,8 +36,8 @@ void DrawVerticalLine(int16_t x, int16_t y1, int16_t y2, uint32_t color)
 		y1 = y2;
 		y2 = tmp;
 	}
-	uint16_t* ptr = getPixelPtr(x, y1);
-	uint16_t sc = to16BitColor(color);
+	pixel_t* ptr = getPixelPtr(x, y1);
+	pixel_t sc = to_pixel_t(color);
 	for (uint16_t y=y1; y<y2; ++y) {
 		*ptr = sc;
 		OffsetPtr(ptr, getLineOffset());
@@ -55,12 +55,12 @@ void DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t color)
 		uint16_t dy = abs(y2 - y1);
 		int sx = (x1 < x2) ? 1 : -1;
 		int sy = (y1 < y2) ? 1 : -1;
-		uint16_t* ptr = getPixelPtr(x1, y1);
+		pixel_t* ptr = getPixelPtr(x1, y1);
 		sy *= getLineOffset();
 		int dx2 = dx * 2;
 		int dy2 = dy * 2;
 		int E;
-		uint16_t sc = to16BitColor(color);
+		pixel_t sc = to_pixel_t(color);
 		// ŒX‚«‚ª1ˆÈ‰º‚Ìê‡
 		if (dy <= dx) {
 			E = -dx;

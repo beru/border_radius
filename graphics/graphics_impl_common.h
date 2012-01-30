@@ -3,39 +3,44 @@
 
 #include "graphics.h"
 
-const uint16_t WIDTH = 320;
-const uint16_t HEIGHT = 240;
+static const uint16_t WIDTH = 640;
+static const uint16_t HEIGHT = 480;
 
-extern uint16_t global_lcd_framebuffer[320*240];
+typedef uint16_t pixel_t;
+extern pixel_t global_lcd_framebuffer[WIDTH*HEIGHT];
 
 static inline
 int getLineOffset()
 {
-	return 320 * sizeof(uint16_t);
+	return WIDTH * sizeof(pixel_t);
 }
 
 static inline
-uint16_t* getPixelPtr(uint16_t x, uint16_t y)
+pixel_t* getPixelPtr(uint16_t x, uint16_t y)
 {
-	uint16_t* ptr = &global_lcd_framebuffer[x];
+	pixel_t* ptr = &global_lcd_framebuffer[x];
 	OffsetPtr(ptr, getLineOffset()*y);
 	return ptr;
 }
 
 static inline
-uint16_t to16BitColor(uint32_t color)
+pixel_t to_pixel_t(uint32_t color)
 {
+#if 1
 	uint16_t c = 0;
 	c |= (color & 0xFF) >> 3;
 	c |= ((color & 0xFF00) >> 10) << 5;
 	c |= ((color & 0xFF0000) >> 19) << 11;
 	return c;
+#else
+	return color;
+#endif
 }
 
 static inline
 void putPixel(uint16_t x, uint16_t y, uint32_t color)
 {
-	*getPixelPtr(x, y) = to16BitColor(color);
+	*getPixelPtr(x, y) = to_pixel_t(color);
 }
 
 template <typename T>
