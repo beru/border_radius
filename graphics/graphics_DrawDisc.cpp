@@ -31,22 +31,23 @@ void Disc(int16_t xCenter, int16_t yCenter, int16_t diameter, uint32_t color)
 	uint16_t y = radius - 1;
 	pixel_t* lineYMinus = getPixelPtr(xCenter, yCenter-y -1);
 	pixel_t* lineYCenter = getPixelPtr(xCenter, yCenter);
-	pixel_t* lineYPlus = getPixelPtr(xCenter, yCenter+y +1);
+//	pixel_t* lineYPlus = getPixelPtr(xCenter, yCenter+y +1);
 	const int lineOffset = getLineOffset();
 	for (; y; --y) {
 		const uint16_t y2 = y * y;
 		OffsetPtr(lineYMinus, lineOffset);
-		OffsetPtr(lineYPlus, -lineOffset);
+//		OffsetPtr(lineYPlus, -lineOffset);
 		// x = 0
 		{
 			const uint16_t r2 = y2;
 			const int32_t diff = radius2 - r2;
-			if (diff <= threshold) {
-				continue;
-			}
+			assert(radius < 512);
+//			if (diff <= threshold) {
+//				continue;
+//			}
 			const uint16_t opacity = (diff * invRadius2) >> FIXEDPOINT_SHIFTS;
 			blendPixel(lineYMinus[0], color, opacity);	// N
-			blendPixel(lineYCenter[-y], color, opacity); // W
+//			blendPixel(lineYCenter[-y], color, opacity); // W
 //			blendPixel(lineYCenter[+y], color, opacity); // E
 //			blendPixel(lineYPlus[0], color, opacity);	// S
 		}
@@ -62,7 +63,7 @@ void Disc(int16_t xCenter, int16_t yCenter, int16_t diameter, uint32_t color)
 		const uint32_t diff2Add = 2 * invRadius2; // ïœìÆó Ç™2Ç∏Ç¬ëùÇ¶ÇƒÇ¢Ç≠
 		uint32_t diff2 = invRadius2 + diff2Add; // 2âÒñ⁄ÇÕ3
 		pixel_t* lineXMinus = lineYCenter;
-		pixel_t* lineXPlus = lineYCenter;
+//		pixel_t* lineXPlus = lineYCenter;
 		for (uint16_t x=1; x<ex; ++x) {
 			const uint32_t opacity = multipliedDiff >> FIXEDPOINT_SHIFTS;
 			multipliedDiff -= diff2;
@@ -72,8 +73,8 @@ void Disc(int16_t xCenter, int16_t yCenter, int16_t diameter, uint32_t color)
 //			blendPixel(lineYPlus[-x], color, opacity); // SSW
 //			blendPixel(lineYPlus[+x], color, opacity); // SSE
 			OffsetPtr(lineXMinus, -lineOffset);
-			OffsetPtr(lineXPlus, +lineOffset);
-			blendPixel(lineXMinus[-y], color, opacity); // WNW
+//			OffsetPtr(lineXPlus, +lineOffset);
+//			blendPixel(lineXMinus[-y], color, opacity); // WNW
 //			blendPixel(lineXMinus[+y], color, opacity); // ENE
 //			blendPixel(lineXPlus[-y], color, opacity); // WSW
 //			blendPixel(lineXPlus[+y], color, opacity); // SSW

@@ -6,7 +6,7 @@
 static const uint16_t WIDTH = 640;
 static const uint16_t HEIGHT = 480;
 
-typedef uint16_t pixel_t;
+typedef uint8_t pixel_t;
 extern pixel_t global_lcd_framebuffer[WIDTH*HEIGHT];
 
 static inline
@@ -27,11 +27,15 @@ static inline
 pixel_t to_pixel_t(uint32_t color)
 {
 #if 1
+#if 1
+	return color & 0xFF;
+#else
 	uint16_t c = 0;
 	c |= (color & 0xFF) >> 3;
 	c |= ((color & 0xFF00) >> 10) << 5;
 	c |= ((color & 0xFF0000) >> 19) << 11;
 	return c;
+#endif
 #else
 	return color;
 #endif
