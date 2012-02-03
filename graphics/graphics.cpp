@@ -6,7 +6,6 @@ namespace Graphics {
 
 void PutPixel(uint16_t x, uint16_t y, uint32_t color)
 {
-	assert(color < 256);
 	putPixel(x, y, color);
 }
 

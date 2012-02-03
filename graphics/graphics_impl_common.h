@@ -6,7 +6,7 @@
 static const uint16_t WIDTH = 640;
 static const uint16_t HEIGHT = 480;
 
-typedef uint8_t pixel_t;
+typedef uint32_t pixel_t;
 extern pixel_t global_lcd_framebuffer[WIDTH*HEIGHT];
 
 static inline
@@ -21,6 +21,12 @@ pixel_t* getPixelPtr(uint16_t x, uint16_t y)
 	pixel_t* ptr = &global_lcd_framebuffer[x];
 	OffsetPtr(ptr, getLineOffset()*y);
 	return ptr;
+}
+
+static inline
+pixel_t makePixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+	return (b<<24) | (b<<16) | (g<<8) | r;
 }
 
 static inline
@@ -44,8 +50,14 @@ pixel_t to_pixel_t(uint32_t color)
 static inline
 void putPixel(uint16_t x, uint16_t y, uint32_t color)
 {
-	*getPixelPtr(x, y) = to_pixel_t(color);
+	*getPixelPtr(x, y) = color;
 }
+
+//static inline
+//void putPixel(uint16_t x, uint16_t y, uint8_t color)
+//{
+//	*getPixelPtr(x, y) = to_pixel_t(color);
+//}
 
 template <typename T>
 static inline
