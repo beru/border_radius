@@ -1,6 +1,8 @@
 
 #include "graphics_impl_common.h"
 
+namespace Graphics {
+
 // ’PF“h‚è‚Â‚Ô‚µˆ—
 void fillSolidRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t color)
 {
@@ -48,4 +50,4 @@ void fillSolidRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t c
 	}
 }
 
-
+}

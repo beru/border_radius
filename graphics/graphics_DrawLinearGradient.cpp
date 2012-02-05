@@ -1,6 +1,6 @@
 #include "graphics_impl_common.h"
 
-namespace {
+namespace Graphics {
 
 uint32_t tmpBuff[WIDTH][3];
 

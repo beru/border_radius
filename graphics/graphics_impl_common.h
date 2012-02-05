@@ -3,11 +3,12 @@
 
 #include "graphics.h"
 
-static const uint16_t WIDTH = 640;
-static const uint16_t HEIGHT = 480;
+namespace Graphics {
 
-typedef uint32_t pixel_t;
-extern pixel_t global_lcd_framebuffer[WIDTH*HEIGHT];
+static const uint16_t WIDTH = 1024;
+static const uint16_t HEIGHT = 768;
+
+extern pixel_t global_lcd_framebuffer[HEIGHT][WIDTH];
 
 static inline
 int getLineOffset()
@@ -18,15 +19,7 @@ int getLineOffset()
 static inline
 pixel_t* getPixelPtr(uint16_t x, uint16_t y)
 {
-	pixel_t* ptr = &global_lcd_framebuffer[x];
-	OffsetPtr(ptr, getLineOffset()*y);
-	return ptr;
-}
-
-static inline
-pixel_t makePixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-	return (b<<24) | (b<<16) | (g<<8) | r;
+	return &global_lcd_framebuffer[y][x];
 }
 
 static inline
@@ -90,5 +83,7 @@ T abs(T a)
 }
 
 void fillSolidRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t color);
+
+}
 
 #endif // #ifndef GRAPHICS_IMPL_COMMON_H_INCLUDED__
