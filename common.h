@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include "trace.h"
 
+template <typename T, size_t N>
+size_t countof( T (&array)[N] )
+{
+    return N;
+}
+
 inline
 size_t GetFileSize(FILE* file)
 {

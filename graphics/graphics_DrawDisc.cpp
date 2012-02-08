@@ -13,9 +13,9 @@ void blendPixel(pixel_t& pixel, uint16_t alpha)
 	pixel = MakePixel(alpha,alpha,alpha,alpha);
 }
 
-void DrawGradationCircle(
+void DrawRadialGradient(
 	int16_t cx, int16_t cy, uint16_t diameter,
-	const uint8_t table[256]
+	const uint8_t* table
 	)
 {
 	const uint16_t radius = diameter / 2;
@@ -55,13 +55,13 @@ void DrawGradationCircle(
 		const int16_t dy = cy - y;
 		const uint32_t dy2 = dy * dy;
 		const uint32_t dy2a = dy2 * invRadius2;
-		int xs = a2;
+		int64_t xs = a2;
 		int d1 = initialD;
 		for (uint16_t x=sx; x<=ex; ++x) {
-			int alpha = dy2a+xs;
-#if 0
-			alpha >>= 22;
-			alpha = table[alpha & 0x3ff];
+			int64_t alpha = dy2a+xs;
+#if 1
+			alpha >>= 24;
+			alpha = table[alpha & 0xff];
 #else
 			// TODO: 表引きすると荒くなってしまう内側だけ分けて描く。
 			// 円の大きさが一定以下なら不要か。。

@@ -26,9 +26,9 @@ int main(int argc, char* argv[])
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
 	
-	uint8_t table[1024];
-	for (int i=0; i<sizeof(table); ++i) {
-		uint16_t alpha = sqrt((double)(i<<6));
+	uint8_t table[256];
+	for (int i=0; i<countof(table); ++i) {
+		uint16_t alpha = sqrt((double)((uint64_t)i<<8));
 //		alpha >>= 8;
 //		assert(alpha < 256);
 //		Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
 	
-	Graphics::DrawGradationCircle(200,200,1024*8, table);
+	Graphics::DrawRadialGradient(200,200,1024*16, table);
 	
 	printf("%f\n", t.ElapsedSecond()*1000);
 	return 0;
