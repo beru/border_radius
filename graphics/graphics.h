@@ -26,7 +26,7 @@ void DrawRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t color,
 void DrawCircle(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color);
 void DrawFilledCircle(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color);
 
-void DrawGradationCircle(int16_t cx, int16_t cy, uint16_t diameter, const pixel_t* table, uint16_t tlen);
+void DrawGradationCircle(int16_t cx, int16_t cy, uint16_t diameter, const uint8_t table[256]);
 
 } // namespace Graphics
 

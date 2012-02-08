@@ -25,23 +25,22 @@ int main(int argc, char* argv[])
 	}
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
-
-	Graphics::pixel_t table[1025];
-	for (int i=0; i<1025; ++i) {
-		uint16_t alpha = sqrt((double)((uint64_t)i<<24)-1);
-		assert(alpha < 65536);
-		alpha >>= 8;
-		assert(alpha < 256);
-		Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
-		table[i] = pixel;
+	
+	uint8_t table[1024];
+	for (int i=0; i<sizeof(table); ++i) {
+		uint16_t alpha = sqrt((double)(i<<6));
+//		alpha >>= 8;
+//		assert(alpha < 256);
+//		Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
+		table[i] = alpha;
 	}
 	
 	Timer t;
 	//for (int i=0; i<1; ++i) {
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
-
-	Graphics::DrawGradationCircle(300,240,1200, table,1025);
+	
+	Graphics::DrawGradationCircle(200,200,1024*8, table);
 	
 	printf("%f\n", t.ElapsedSecond()*1000);
 	return 0;
