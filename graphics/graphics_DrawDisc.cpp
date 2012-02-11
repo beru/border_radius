@@ -15,12 +15,11 @@ void blendPixel(pixel_t& pixel, uint16_t alpha)
 
 void DrawRadialGradient(
 	int16_t cx, int16_t cy, uint16_t diameter,
-	const uint8_t* table
+	const uint8_t* table, uint8_t nShifts
 	)
 {
 	const uint16_t radius = diameter / 2;
 	const uint32_t radius2 = (diameter * diameter) / 4;
-	const uint32_t invRadius2 = (255ull << 24) / radius2;
 	int16_t sy = cy - radius;
 	int16_t ey = sy + diameter;
 	int16_t sx = cx - radius;
@@ -30,47 +29,41 @@ void DrawRadialGradient(
 	sx = std::max<int>(0, sx);
 	ex = std::min<int>(ex, WIDTH);
 	const int16_t a = cx - sx;
+
+	// 中心から一番遠い画面の端までの距離の半径に対しての比率を出す。
+	// 中心点からの画面の左端の距離と右端の距離のうち、長い方を求める。
+	uint16_t dx = std::max(abs(cx - sx), abs(cx - ex));
+	uint16_t dy = std::max(abs(cy - sy), abs(cy - ey));
+	double lenRatio = radius / sqrt((double)dx*dx+dy*dy);
+	uint8_t adjustShift1 = 0;
+	uint8_t adjustShift2 = 0;
+	if (lenRatio > 6.0) { // こんくらいで勘弁してやる
+		adjustShift1 = 6;
+		adjustShift2 = 3;
+	}else if (lenRatio > 4.0) {
+		adjustShift1 = 4;
+		adjustShift2 = 2;
+	}if (lenRatio > 2.0) {
+		adjustShift1 = 2;
+		adjustShift2 = 1;
+	}
+	const uint32_t invRadius2 = (255ull << (24+adjustShift1)) / radius2;
 	const int a2 = a * a * invRadius2;
 	const int initialD = (-2 * a + 1) * invRadius2;
-	uint8_t shifts[640];
-	for (uint8_t i=0; i<64; ++i) {
-		shifts[i] = 22;
-	}
-	for (uint8_t i=0; i<16; ++i) {
-		shifts[i] = 20;
-	}
-//	for (uint8_t i=16; i<32; ++i) {
-//		shifts[i] = 20;
-//	}
-	
-	uint8_t shifts2[23];
-	for (uint8_t i=0; i<23; ++i) {
-		shifts2[i] = 0;
-	}
-	shifts2[16] = 3;
-	shifts2[20] = 1;
 
-
+	const uint8_t shiftBits = 32 - nShifts;
+	const uint16_t mask = (1<<nShifts) - 1;
 	for (uint16_t y=sy; y<=ey; ++y) {
 		const int16_t dy = cy - y;
 		const uint32_t dy2 = dy * dy;
 		const uint32_t dy2a = dy2 * invRadius2;
-		int64_t xs = a2;
+		int xs = a2;
 		int d1 = initialD;
 		for (uint16_t x=sx; x<=ex; ++x) {
-			int64_t alpha = dy2a+xs;
-#if 1
-			alpha >>= 24;
-			alpha = table[alpha & 0xff];
-#else
-			// TODO: 表引きすると荒くなってしまう内側だけ分けて描く。
-			// 円の大きさが一定以下なら不要か。。
-			uint64_t absSum = dy2 + (cx-x)*(cx-x);
-			uint8_t shift = shifts[absSum>>14];
-			alpha >>= shift;
-			alpha = table[alpha & 0x3ff];
-			alpha >>= shifts2[shift];
-#endif
+			int alpha = dy2a+xs;
+			alpha >>= shiftBits;
+			uint16_t idx = alpha & mask;
+			alpha = table[idx] >> adjustShift2;
 			Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
 			Graphics::PutPixel(x, y, pixel);
 			
