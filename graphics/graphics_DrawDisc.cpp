@@ -20,6 +20,9 @@ void DrawRadialGradient(
 {
 	const uint16_t radius = diameter / 2;
 	const uint32_t radius2 = (diameter * diameter) / 4;
+	if (radius2 == 0) {
+		return;
+	}
 	int16_t sy = cy - radius;
 	int16_t ey = sy + diameter;
 	int16_t sx = cx - radius;
@@ -78,17 +81,17 @@ void DrawRadialGradient(
 		int d1 = initialD;
 
 #if 1
-		int16_t dx = sqrt((double)radius2 - dy2) + 0.5;
-		int16_t sx2 = max<int16_t>(sx, cx-dx)+1;
-		int16_t ex2 = min<int16_t>(ex, cx+dx)-1;
+		int16_t dx = sqrt((double)radius2 - dy2);// + 0.5;
+		int16_t sx2 = max<int16_t>(sx, cx-dx);
+		int16_t ex2 = min<int16_t>(ex, cx+dx);
 		uint16_t x;
-		for (x=sx; x<=sx2; ++x) {
+		for (x=sx; x<sx2; ++x) {
 			xs += d1;
 			d1 += 2 * invRadius2;
 		}
-		for (; x<ex2; ++x) {
+		for (; x<=ex2; ++x) {
 #else
-		for (uint16_t x=sx+1; x<ex-1; ++x) {
+		for (uint16_t x=sx; x<=ex; ++x) {
 #endif
 			int alpha = dy2a+xs;
 			alpha >>= shiftBits;
@@ -97,6 +100,7 @@ void DrawRadialGradient(
 			alpha = table[idx];
 			alpha = max((alpha + thresholds[y%4][x%4]),0);
 			alpha = alpha >> adjustShift2;
+			alpha = min(alpha,255);
 //			alpha = 255-alpha;
 			Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
 			Graphics::PutPixel(x, y, pixel);

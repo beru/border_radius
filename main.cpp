@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
 	
-	Graphics::DrawRadialGradient(500,500,1024*0.4, table, NSHIFTS);
+	Graphics::DrawRadialGradient(500,500,512, table, NSHIFTS);
 	
 	printf("%f\n", t.ElapsedSecond()*1000);
 	return 0;
