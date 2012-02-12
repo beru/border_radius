@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
 	
-	static const uint8_t NSHIFTS = 12;
+	static const uint8_t NSHIFTS = 14;
 	uint16_t table[1<<NSHIFTS];
 	for (int i=0; i<countof(table); ++i) {
 		uint16_t alpha = sqrt((double)((uint64_t)i<<(32-NSHIFTS)));
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
 	
-	Graphics::DrawRadialGradient(200,200,1024*10, table, NSHIFTS);
+	Graphics::DrawRadialGradient(500,500,1024*0.4, table, NSHIFTS);
 	
 	printf("%f\n", t.ElapsedSecond()*1000);
 	return 0;

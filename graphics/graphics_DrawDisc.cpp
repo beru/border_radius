@@ -37,7 +37,10 @@ void DrawRadialGradient(
 	uint16_t lenRatio2 = radius2 / (dx*dx+dy*dy);
 	uint8_t adjustShift1 = 0;
 	uint8_t adjustShift2 = 0;
-	if (lenRatio2 >= 6*6) { // ‚±‚ñ‚­‚ç‚¢‚ÅŠ¨•Ù‚µ‚Ä‚â‚é
+	if (lenRatio2 >= 8*8) {
+		adjustShift1 = 8;
+		adjustShift2 = 4;
+	}else if (lenRatio2 >= 6*6) {
 		adjustShift1 = 6;
 		adjustShift2 = 3;
 	}else if (lenRatio2 >= 4*4) {
@@ -52,7 +55,7 @@ void DrawRadialGradient(
 	const int a2 = a * a * invRadius2;
 	const int initialD = (-2 * a + 1) * invRadius2;
 
-
+	// ordered dithering table
 	int16_t thresholds[4][4] = {
 		1,9,3,11,
 		13,5,15,7,
@@ -74,7 +77,19 @@ void DrawRadialGradient(
 		int xs = a2;
 		int d1 = initialD;
 
-		for (uint16_t x=sx; x<=ex; ++x) {
+#if 1
+		int16_t dx = sqrt((double)radius2 - dy2) + 0.5;
+		int16_t sx2 = max<int16_t>(sx, cx-dx)+1;
+		int16_t ex2 = min<int16_t>(ex, cx+dx)-1;
+		uint16_t x;
+		for (x=sx; x<=sx2; ++x) {
+			xs += d1;
+			d1 += 2 * invRadius2;
+		}
+		for (; x<ex2; ++x) {
+#else
+		for (uint16_t x=sx+1; x<ex-1; ++x) {
+#endif
 			int alpha = dy2a+xs;
 			alpha >>= shiftBits;
 			uint16_t idx = alpha & mask;
@@ -82,7 +97,7 @@ void DrawRadialGradient(
 			alpha = table[idx];
 			alpha = max((alpha + thresholds[y%4][x%4]),0);
 			alpha = alpha >> adjustShift2;
-			
+//			alpha = 255-alpha;
 			Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
 			Graphics::PutPixel(x, y, pixel);
 			
