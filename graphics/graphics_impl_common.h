@@ -6,7 +6,7 @@
 namespace Graphics {
 
 static const uint16_t WIDTH = 1024;
-static const uint16_t HEIGHT = 768;
+static const uint16_t HEIGHT = 1024;
 
 extern pixel_t global_lcd_framebuffer[HEIGHT][WIDTH];
 
@@ -73,6 +73,13 @@ static inline
 T max(T a, T b)
 {
 	return a>b ? a : b;
+}
+
+template <typename T>
+static inline
+T clamp(T v, T minV, T maxV)
+{
+	return min(max(v,minV), maxV);
 }
 
 template <typename T>

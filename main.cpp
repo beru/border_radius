@@ -26,17 +26,13 @@ int main(int argc, char* argv[])
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
 	
-	static const uint8_t NSHIFTS = 14;
-	uint16_t table[1<<NSHIFTS];
-	for (int i=0; i<countof(table); ++i) {
+	static const uint8_t NSHIFTS = 12;
+	uint16_t distanceTable[1<<NSHIFTS];
+	for (int i=0; i<countof(distanceTable); ++i) {
 		uint16_t alpha = sqrt((double)((uint64_t)i<<(32-NSHIFTS)));
-//		alpha >>= 8;
-//		assert(alpha < 256);
-//		Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
-		table[i] = alpha;
+		distanceTable[i] = alpha;
 	}
 	
-	Timer t;
 	//for (int i=0; i<1; ++i) {
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
@@ -44,11 +40,27 @@ int main(int argc, char* argv[])
 	clippingRect.x = 0;
 	clippingRect.y = 0;
 	clippingRect.w = 1024;
-	clippingRect.h = 768;
+	clippingRect.h = 1024;
 	
-	Graphics::DrawRadialGradient(500,500,512, table, NSHIFTS, clippingRect);
-	
+	Timer t;
+
+#if 0
+	Graphics::DrawRadialGradient(
+		512,512, 512, clippingRect,
+		distanceTable, NSHIFTS,
+		0, 0,
+		false
+		);
+#else
+	Graphics::DrawLinearGradient(
+		0,0, Graphics::MakePixel(0,50,0,0),
+		1024,0, Graphics::MakePixel(0,10,0,0),
+		clippingRect,
+		true
+		);
+#endif
 	printf("%f\n", t.ElapsedSecond()*1000);
+
 	return 0;
 }
 

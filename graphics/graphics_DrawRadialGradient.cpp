@@ -14,10 +14,12 @@ void blendPixel(pixel_t& pixel, uint16_t alpha)
 }
 
 void DrawRadialGradient(
-	int16_t cx, int16_t cy, uint16_t diameter,
-	const uint16_t* table, uint8_t nShifts,
-	const ClippingRect& clippingRect
-	)
+						int16_t cx, int16_t cy, uint16_t diameter,
+						const ClippingRect& clippingRect,
+						const uint16_t* distanceTable, uint8_t distanceTableShifts,
+						const pixel_t* pixelTable, uint8_t pixelTableShits,
+						bool dithering
+						)
 {
 	if (diameter < 2) {
 		return;
@@ -81,8 +83,8 @@ void DrawRadialGradient(
 		pt[i] -= (8 << (adjustShift2 - 3));
 	}
 
-	const uint8_t shiftBits = 32 - nShifts;
-	const uint16_t mask = (1<<nShifts) - 1;
+	const uint8_t shiftBits = 32 - distanceTableShifts;
+	const uint16_t mask = (1<<distanceTableShifts) - 1;
 	for (uint16_t y=sy; y<=ey; ++y) {
 		const int16_t dy = cy - y;
 		const uint32_t dy2 = dy * dy;
@@ -107,7 +109,7 @@ void DrawRadialGradient(
 			alpha >>= shiftBits;
 			uint16_t idx = alpha & mask;
 
-			alpha = table[idx];
+			alpha = distanceTable[idx];
 			alpha = max((alpha + thresholds[y%4][x%4]),0);
 			alpha = alpha >> adjustShift2;
 			alpha = min(alpha,255);
