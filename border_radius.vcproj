@@ -229,11 +229,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\graphics\graphics_DrawDisc.cpp"
+				RelativePath=".\graphics\graphics_DrawLinearGradient.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\graphics\graphics_DrawLinearGradient.cpp"
+				RelativePath=".\graphics\graphics_DrawRadialGradient.cpp"
 				>
 			</File>
 			<File

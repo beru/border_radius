@@ -14,12 +14,12 @@ void PutPixel(uint16_t x, uint16_t y, uint32_t color)
 	putPixel(x, y, color);
 }
 
-void FillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint32_t color)
+void FillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, pixel_t color)
 {
 	fillSolidRectangle(x, y, w, h, color);
 }
 
-void DrawHorizontalLine(int16_t x1, int16_t x2, int16_t y, uint32_t color)
+void DrawHorizontalLine(int16_t x1, int16_t x2, int16_t y, pixel_t color)
 {
 	if (x1 > x2) {
 		uint16_t tmp = x1;
@@ -34,7 +34,7 @@ void DrawHorizontalLine(int16_t x1, int16_t x2, int16_t y, uint32_t color)
 	}
 }
 
-void DrawVerticalLine(int16_t x, int16_t y1, int16_t y2, uint32_t color)
+void DrawVerticalLine(int16_t x, int16_t y1, int16_t y2, pixel_t color)
 {
 	if (y1 > y2) {
 		uint16_t tmp = y1;
@@ -49,7 +49,7 @@ void DrawVerticalLine(int16_t x, int16_t y1, int16_t y2, uint32_t color)
 	}
 }
 
-void DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t color)
+void DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, pixel_t color)
 {
 	if (x1 == x2) {
 		DrawVerticalLine(x1, y1, y2, color);

@@ -4,7 +4,7 @@
 namespace Graphics {
 
 // http://www.softist.com/programming/drawcircle/drawcircle.htm
-void drawCircle1 (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void drawCircle1 (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
 	#define SHIFT 7
@@ -29,7 +29,7 @@ void drawCircle1 (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 }
 
 // http://fussy.web.fc2.com/algo/algo2-1.htm
-void drawCircle2 (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void drawCircle2 (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
 	int x = r;
@@ -54,7 +54,7 @@ void drawCircle2 (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 }
 
 // http://d.hatena.ne.jp/zariganitosh/20100318/1269006632
-void drawCircle3 (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void drawCircle3 (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
 	int x = r;
@@ -81,7 +81,7 @@ void drawCircle3 (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 
 // http://willperone.net/Code/codecircle.php
 // slightly faster algorithm posted by coyote
-void CircleMidpoint (int xc, int yc, uint16_t diameter, int color)
+void CircleMidpoint (int xc, int yc, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
 	int x= 0;
@@ -121,7 +121,7 @@ void CircleMidpoint (int xc, int yc, uint16_t diameter, int color)
 
 // http://willperone.net/Code/codecircle.php
 // slightly faster algorithm posted by coyote
-void FilledCircleMidpoint (int xc, int yc, uint16_t diameter, int color)
+void FilledCircleMidpoint (int xc, int yc, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
 	int x= 0;
@@ -155,7 +155,7 @@ void FilledCircleMidpoint (int xc, int yc, uint16_t diameter, int color)
 }
 
 // http://willperone.net/Code/codecircle.php
-void CircleOptimized (int xc, int yc, uint16_t diameter, int color)
+void CircleOptimized (int xc, int yc, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
     unsigned int x= r, y= 0;//local coords     
@@ -184,7 +184,7 @@ void CircleOptimized (int xc, int yc, uint16_t diameter, int color)
 }
 
 // https://banu.com/blog/7/drawing-circles/
-void BanuDrawCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void BanuDrawCircle (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	uint16_t r = diameter / 2;
 	int x, y;
@@ -231,7 +231,7 @@ struct POINT
 };
 
 // http://dencha.ojaru.jp/programs_07/pg_graphic_09a2.html
-void NewCircleAlgorithm (long diameter, POINT center, uint32_t col)
+void NewCircleAlgorithm (long diameter, POINT center, pixel_t col)
 {
 	long cy = diameter/2 + 1;
 	long d = -diameter*diameter +4*cy*cy -4*cy +2;
@@ -267,7 +267,7 @@ void NewCircleAlgorithm (long diameter, POINT center, uint32_t col)
 	}
 }
 
-void DrawNewCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void DrawNewCircle (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	POINT p = {cx, cy};
 	NewCircleAlgorithm (diameter, p, color);
@@ -275,7 +275,7 @@ void DrawNewCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 
 // TODO: 描画は後でやる。段の移動情報だけ記録して、描画は一気呵成にした方が効率が良いだろう。
 
-void OstCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void OstCircle (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	int r = diameter / 2;
 	int x = r;
@@ -355,7 +355,7 @@ SD:
 	}
 }
 
-void DrawCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void DrawCircle (int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 //	drawCircle1
 //	drawCircle2
@@ -367,7 +367,7 @@ void DrawCircle (int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
 		(cx, cy, diameter, color);
 }
 
-void DrawFilledCircle(int16_t cx, int16_t cy, uint16_t diameter, uint32_t color)
+void DrawFilledCircle(int16_t cx, int16_t cy, uint16_t diameter, pixel_t color)
 {
 	FilledCircleMidpoint (cx, cy, diameter, color);
 }

@@ -152,8 +152,8 @@ struct Color
 
 
 void linearGradient_Horizontal(
-	int16_t x1, uint32_t v1,
-	int16_t x2, uint32_t v2
+	int16_t x1, pixel_t v1,
+	int16_t x2, pixel_t v2
 	)
 {
 	if (x2 < x1) {
@@ -201,8 +201,8 @@ void linearGradient_Horizontal(
 }
 
 void linearGradient_Vertical(
-	int16_t y1, uint32_t v1,
-	int16_t y2, uint32_t v2
+	int16_t y1, pixel_t v1,
+	int16_t y2, pixel_t v2
 	)
 {
 	if (y2 < y1) {
@@ -243,8 +243,8 @@ void linearGradient_Vertical(
 }
 
 void linearGradient(
-	int16_t x1, int16_t y1, uint32_t v1,
-	int16_t x2, int16_t y2, uint32_t v2
+	int16_t x1, int16_t y1, pixel_t v1,
+	int16_t x2, int16_t y2, pixel_t v2
 	)
 {
 	if (x2 < x1) {
@@ -305,7 +305,7 @@ void linearGradient(
 
 namespace Graphics {
 
-void DrawLinearGradient(int16_t x1, int16_t y1, uint32_t v1, int16_t x2, int16_t y2, uint32_t v2)
+void DrawLinearGradient(int16_t x1, int16_t y1, pixel_t v1, int16_t x2, int16_t y2, pixel_t v2)
 {
 	if (x1 == x2) {
 		linearGradient_Vertical(y1, v1, y2, v2);

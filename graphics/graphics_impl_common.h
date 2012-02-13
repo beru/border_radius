@@ -41,7 +41,7 @@ pixel_t to_pixel_t(uint32_t color)
 }
 
 static inline
-void putPixel(uint16_t x, uint16_t y, uint32_t color)
+void putPixel(uint16_t x, uint16_t y, pixel_t color)
 {
 	*getPixelPtr(x, y) = color;
 }
@@ -82,7 +82,7 @@ T abs(T a)
 	return a<0 ? -a:a;
 }
 
-void fillSolidRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t color);
+void fillSolidRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, pixel_t color);
 
 }
 
