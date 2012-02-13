@@ -40,8 +40,13 @@ int main(int argc, char* argv[])
 	//for (int i=0; i<1; ++i) {
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
+	Graphics::ClippingRect clippingRect;
+	clippingRect.x = 0;
+	clippingRect.y = 0;
+	clippingRect.w = 1024;
+	clippingRect.h = 768;
 	
-	Graphics::DrawRadialGradient(500,500,512, table, NSHIFTS);
+	Graphics::DrawRadialGradient(500,500,512, table, NSHIFTS, clippingRect);
 	
 	printf("%f\n", t.ElapsedSecond()*1000);
 	return 0;
