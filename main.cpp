@@ -37,14 +37,14 @@ int main(int argc, char* argv[])
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
 	Graphics::ClippingRect clippingRect;
-	clippingRect.x = 0;
-	clippingRect.y = 0;
-	clippingRect.w = 1024;
-	clippingRect.h = 1024;
+	clippingRect.x = 300;
+	clippingRect.y = 300;
+	clippingRect.w = 900;
+	clippingRect.h = 900;
 	
 	Timer t;
 
-#if 0
+#if 1
 	Graphics::DrawRadialGradient(
 		512,512, 512, clippingRect,
 		distanceTable, NSHIFTS,
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 		);
 #endif
 	printf("%f\n", t.ElapsedSecond()*1000);
-
+	
 	return 0;
 }
 

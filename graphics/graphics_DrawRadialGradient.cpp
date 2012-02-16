@@ -43,8 +43,6 @@ void DrawRadialGradient(
 	ex = min(ex, clippingRect.x+clippingRect.w);
 	ex = min(ex, (int32_t)WIDTH);
 
-	const int16_t a = cx - sx;
-
 	// 中心から描画領域の端までの距離の半径に対しての比率を出す。
 	// 中心点からの描画領域の左端の距離と右端の距離のうち、長い方を求める。
 	uint16_t dx = std::max(abs(cx - sx), abs(cx - ex));
@@ -67,9 +65,6 @@ void DrawRadialGradient(
 	}
 	adjustShift2 += 8;
 	const uint32_t invRadius2 = (255ull << (24+adjustShift1)) / radius2;
-	const int32_t a2 = a * a * invRadius2;
-	const int32_t initialD = (-2 * a + 1) * invRadius2;
-	
 	// ordered dithering table 4x4
 	int16_t thresholds[4][4] = {
 		1,9,3,11,
@@ -82,33 +77,26 @@ void DrawRadialGradient(
 		pt[i] <<= adjustShift2 - 3;
 		pt[i] -= (8 << (adjustShift2 - 3));
 	}
-
+	
 	const uint8_t shiftBits = 32 - distanceTableShifts;
 	const uint16_t mask = (1<<distanceTableShifts) - 1;
 	for (uint16_t y=sy; y<=ey; ++y) {
 		const int16_t dy = cy - y;
 		const uint32_t dy2 = dy * dy;
 		const uint32_t dy2a = dy2 * invRadius2;
-		int xs = a2;
-		int d1 = initialD;
 		
-#if 1
 		int16_t dx = sqrt((double)radius2 - dy2);// + 0.5;
-		int16_t sx2 = max<int16_t>(sx, cx-dx);
-		int16_t ex2 = min<int16_t>(ex, cx+dx);
-		uint16_t x;
-		for (x=sx; x<sx2; ++x) {
-			xs += d1;
-			d1 += 2 * invRadius2;
-		}
-		for (; x<=ex2; ++x) {
-#else
-		for (uint16_t x=sx; x<=ex; ++x) {
-#endif
+		const int16_t sx2 = max<int16_t>(sx, cx-dx);
+		const int16_t ex2 = min<int16_t>(ex, cx+dx);
+		
+		dx = cx - sx2;
+		int xs = dx * dx * invRadius2;
+		int d1 = (dx * -2 + 1) * invRadius2;
+		for (int16_t x=sx2; x<=ex2; ++x) {
 			int alpha = dy2a+xs;
 			alpha >>= shiftBits;
 			uint16_t idx = alpha & mask;
-
+			
 			alpha = distanceTable[idx];
 			alpha = max((alpha + thresholds[y%4][x%4]),0);
 			alpha = alpha >> adjustShift2;
