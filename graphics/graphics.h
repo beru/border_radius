@@ -43,11 +43,13 @@ void DrawLinearGradient(int16_t x1, int16_t y1, pixel_t v1,
 						const ClippingRect& clippingRect,
 						bool dithering);
 
-void DrawRadialGradient(int16_t cx, int16_t cy, uint16_t diameter,
-						const ClippingRect& clippingRect,
-						const uint16_t* distanceTable, uint8_t distanceTableShifts,
-						const pixel_t* pixelTable, uint8_t pixelTableShits,
-						bool dithering);
+void DrawRadialGradient(
+	int16_t cx, int16_t cy, uint16_t diameter,
+	const ClippingRect& clippingRect,
+	const uint16_t* distanceTable, uint8_t distanceTableShifts,
+	const pixel_t* pixelTable, uint8_t pixelTableShits,
+	const pixel_t* colorTable,
+	bool dithering);
 
 } // namespace Graphics
 

@@ -14,12 +14,13 @@ void blendPixel(pixel_t& pixel, uint16_t alpha)
 }
 
 void DrawRadialGradient(
-						int16_t cx, int16_t cy, uint16_t diameter,
-						const ClippingRect& clippingRect,
-						const uint16_t* distanceTable, uint8_t distanceTableShifts,
-						const pixel_t* pixelTable, uint8_t pixelTableShits,
-						bool dithering
-						)
+	int16_t cx, int16_t cy, uint16_t diameter,
+	const ClippingRect& clippingRect,
+	const uint16_t* distanceTable, uint8_t distanceTableShifts,
+	const pixel_t* pixelTable, uint8_t pixelTableShits,
+	const pixel_t* colorTable,
+	bool dithering
+	)
 {
 	if (diameter < 2) {
 		return;
@@ -42,7 +43,7 @@ void DrawRadialGradient(
 
 	ex = min(ex, clippingRect.x+clippingRect.w);
 	ex = min(ex, (int32_t)WIDTH);
-
+	
 	// 中心から描画領域の端までの距離の半径に対しての比率を出す。
 	// 中心点からの描画領域の左端の距離と右端の距離のうち、長い方を求める。
 	uint16_t dx = std::max(abs(cx - sx), abs(cx - ex));
@@ -66,19 +67,18 @@ void DrawRadialGradient(
 	adjustShift2 += 8;
 	const uint32_t invRadius2 = (255ull << (24+adjustShift1)) / radius2;
 	// ordered dithering table 4x4
-	int16_t thresholds[4][4] = {
+	uint16_t thresholds[4][4] = {
 		1,9,3,11,
 		13,5,15,7,
 		4,12,2,10,
 		16,8,14,6,
 	};
-	int16_t* pt = (int16_t*)thresholds;
+	uint16_t* pt = (uint16_t*)thresholds;
 	for (uint8_t i=0; i<16; ++i) {
 		pt[i] <<= adjustShift2 - 3;
-		pt[i] -= (8 << (adjustShift2 - 3));
 	}
 	
-	const uint8_t shiftBits = 32 - distanceTableShifts;
+	const uint8_t shiftBits = (32 - distanceTableShifts);
 	const uint16_t mask = (1<<distanceTableShifts) - 1;
 	for (uint16_t y=sy; y<=ey; ++y) {
 		const int16_t dy = cy - y;
@@ -90,23 +90,28 @@ void DrawRadialGradient(
 		const int16_t ex2 = min<int16_t>(ex, cx+dx);
 		
 		dx = cx - sx2;
-		int xs = dx * dx * invRadius2;
-		int d1 = (dx * -2 + 1) * invRadius2;
-		for (int16_t x=sx2; x<=ex2; ++x) {
-			int alpha = dy2a+xs;
-			alpha >>= shiftBits;
-			uint16_t idx = alpha & mask;
-			
-			alpha = distanceTable[idx];
-			alpha = max((alpha + thresholds[y%4][x%4]),0);
-			alpha = alpha >> adjustShift2;
-			alpha = min(alpha,255);
-//			alpha = 255-alpha;
-			Graphics::pixel_t pixel = Graphics::MakePixel(alpha,alpha,alpha,alpha);
-			Graphics::PutPixel(x, y, pixel);
-			
-			xs += d1;
-			d1 += 2 * invRadius2;
+		int32_t xs = dx * dx * invRadius2;
+		int32_t d1 = (dx * -2 + 1) * invRadius2;
+		int16_t x = sx2;
+		uint32_t sum = dy2a + xs;
+		if (dithering) {
+			const uint16_t* pThreshold = thresholds[y&3u];
+			for (; x<=ex2; ++x) {
+				uint32_t alpha = (distanceTable[sum >> shiftBits] + pThreshold[x&3u]) >> adjustShift2;
+				Graphics::pixel_t pixel = colorTable[alpha];
+				Graphics::PutPixel(x, y, pixel);
+				sum += d1;
+				d1 += 2 * invRadius2;
+
+			}
+		}else {
+			for (; x<=ex2; ++x) {
+				uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2; // hoist computation & loading
+				Graphics::pixel_t pixel = colorTable[alpha];
+				Graphics::PutPixel(x, y, pixel);
+				sum += d1;
+				d1 += 2 * invRadius2;
+			}
 		}
 	}
 }

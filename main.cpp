@@ -32,25 +32,33 @@ int main(int argc, char* argv[])
 		uint16_t alpha = sqrt((double)((uint64_t)i<<(32-NSHIFTS)));
 		distanceTable[i] = alpha;
 	}
+
+	Graphics::pixel_t colorTable[256+1];
+	for (int i=0; i<256; ++i) {
+		colorTable[i] = Graphics::MakePixel(i,i,i,i);
+	}
 	
 	//for (int i=0; i<1; ++i) {
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
 	Graphics::ClippingRect clippingRect;
-	clippingRect.x = 300;
-	clippingRect.y = 300;
-	clippingRect.w = 900;
+	clippingRect.x = 100;
+	clippingRect.y = 100;
+	clippingRect.w = 800;
 	clippingRect.h = 900;
 	
 	Timer t;
 
 #if 1
-	Graphics::DrawRadialGradient(
-		512,512, 512, clippingRect,
-		distanceTable, NSHIFTS,
-		0, 0,
-		false
-		);
+	for (int i=0; i<100; ++i) {
+		Graphics::DrawRadialGradient(
+			512,512, 512*4, clippingRect,
+			distanceTable, NSHIFTS,
+			0, 0,
+			colorTable,
+			true
+			);
+	}
 #else
 	Graphics::DrawLinearGradient(
 		0,0, Graphics::MakePixel(0,50,0,0),

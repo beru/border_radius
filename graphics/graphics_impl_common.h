@@ -68,6 +68,24 @@ T min(T a, T b)
 	return a<b ? a : b;
 }
 
+#if 0
+static inline
+int min(int x, int y)
+{
+	assert(INT_MIN <= (x - y));
+	assert((x - y) <= INT_MAX);
+	return y + ((x - y) & ((x - y) >> (sizeof(int) * CHAR_BIT - 1))); // min(x, y)
+}
+
+static inline
+int max(int x, int y)
+{
+	assert(INT_MIN <= (x - y));
+	assert((x - y) <= INT_MAX);
+	return x - ((x - y) & ((x - y) >> (sizeof(int) * CHAR_BIT - 1))); // max(x, y)
+}
+#endif
+
 template <typename T>
 static inline
 T max(T a, T b)
