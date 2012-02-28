@@ -94,6 +94,9 @@ void DrawRadialGradient(
 		int32_t d1 = (dx * -2 + 1) * invRadius2;
 		int16_t x = sx2;
 		uint32_t sum = dy2a + xs;
+		
+		// TODO: 縁の描画はピクセル占有率等も考慮して行う
+		
 		if (dithering) {
 			const uint16_t* pThreshold = thresholds[y&3u];
 			for (; x<=ex2; ++x) {
@@ -102,11 +105,10 @@ void DrawRadialGradient(
 				Graphics::PutPixel(x, y, pixel);
 				sum += d1;
 				d1 += 2 * invRadius2;
-
 			}
 		}else {
 			for (; x<=ex2; ++x) {
-				uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2; // hoist computation & loading
+				uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2;
 				Graphics::pixel_t pixel = colorTable[alpha];
 				Graphics::PutPixel(x, y, pixel);
 				sum += d1;
