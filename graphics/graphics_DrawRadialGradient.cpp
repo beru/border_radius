@@ -22,7 +22,8 @@ void drawLine_noDither(
 	)
 {
 #if 1
-
+#if 1
+	// SIMD
 	__m128i* p = (__m128i*) getPixelPtr(x, y);
 	uint8_t surplus = (int)p & 15;
 	if (surplus) {
@@ -36,30 +37,25 @@ void drawLine_noDither(
 		p = (__m128i*) ((int)p & ~15);
 		++p;
 	}
-	
-	for (; x<=ex2; x+=4) {
+	for (; x<=ex2; x+=2) {
 		__m128i p1 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
 		sum += d1;
 		d1 += 2 * invRadius2;
 		__m128i p2 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
 		sum += d1;
 		d1 += 2 * invRadius2;
-
-		__m128i p3 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
-		sum += d1;
-		d1 += 2 * invRadius2;
-		__m128i p4 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
-		sum += d1;
-		d1 += 2 * invRadius2;
-
-		_mm_storeu_si128(p++,
-			_mm_unpacklo_epi64(
-				_mm_unpacklo_epi32(p1, p2),
-				_mm_unpacklo_epi32(p3, p4)
-				)
-			);
-
+		
+		_mm_storel_epi64(p, _mm_unpacklo_epi32(p1, p2));
+		p = (__m128i*)((char*)p + 8);
 	}
+#else
+	for (; x<=ex2; ++x) {
+		Graphics::pixel_t pixel = colorTable[sum >> shiftBits];
+		Graphics::PutPixel(x, y, pixel);
+		sum += d1;
+		d1 += 2 * invRadius2;
+	}
+#endif
 #else
 	for (; x<=ex2; ++x) {
 		uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2;

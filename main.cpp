@@ -33,6 +33,8 @@ int main(int argc, char* argv[])
 		distanceTable[i] = alpha;
 	}
 
+	Timer t;
+	
 #if 0
 	Graphics::pixel_t colorTable[256+1];
 	for (int i=0; i<256; ++i) {
@@ -56,12 +58,10 @@ int main(int argc, char* argv[])
 	clippingRect.w = 1920;
 	clippingRect.h = 1080;
 	
-	Timer t;
-	
 #if 1
 	for (int i=0; i<1; ++i) {
 		Graphics::DrawRadialGradient(
-			1024,512, 512*4, clippingRect,
+			1024,512, 512*2, clippingRect,
 			distanceTable, NSHIFTS,
 			0, 0,
 			colorTable,
