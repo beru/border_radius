@@ -21,28 +21,46 @@ void drawLine_noDither(
 	uint32_t sum, int32_t d1, uint32_t invRadius2
 	)
 {
-#if 0
-	__m128i* p = (__m128i*) ((int)getPixelPtr(x, y));// & (~15));
-	size_t cnt = (ex2 - x + 1) / 2;
-	uint32_t alpha;
-	__m128i sums = _mm_set_epi32(0, 0, sum+d1, sum);
-	__m128i d1s = _mm_set_epi32(0, 0, d1+d1+6*invRadius2, d1+d1+2*invRadius2);
-	__m128i d1p = _mm_set_epi32(0, 0, 8*invRadius2, 8*invRadius2);
-	for (size_t i=0; i<cnt; ++i) {
-		__m128i shifted = _mm_srli_epi32(sums, shiftBits);
-		sums = _mm_add_epi32(sums, d1s);
-		d1s = _mm_add_epi32(d1s, d1p);
-		
-		alpha = distanceTable[shifted.m128i_u32[0]] >> adjustShift2;
-		__m128i p1 = _mm_cvtsi32_si128(colorTable[alpha]);
-		alpha = distanceTable[shifted.m128i_u32[1]] >> adjustShift2;
-		__m128i p2 = _mm_cvtsi32_si128(colorTable[alpha]);
-		_mm_storel_epi64(p, _mm_unpacklo_epi32(p1, p2));
-		p = (__m128i*)((char*)p + 8);
+#if 1
+
+	__m128i* p = (__m128i*) getPixelPtr(x, y);
+	uint8_t surplus = (int)p & 15;
+	if (surplus) {
+		surplus = (16 - surplus) / 4;
+		int16_t xe = x+surplus;
+		for (; x<xe; ++x) {
+			Graphics::PutPixel(x, y, colorTable[sum >> shiftBits]);
+			sum += d1;
+			d1 += 2 * invRadius2;
+		}
+		p = (__m128i*) ((int)p & ~15);
+		++p;
+	}
+	
+	for (; x<=ex2; x+=4) {
+		__m128i p1 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
+		sum += d1;
+		d1 += 2 * invRadius2;
+		__m128i p2 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
+		sum += d1;
+		d1 += 2 * invRadius2;
+
+		__m128i p3 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
+		sum += d1;
+		d1 += 2 * invRadius2;
+		__m128i p4 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
+		sum += d1;
+		d1 += 2 * invRadius2;
+
+		_mm_storeu_si128(p++,
+			_mm_unpacklo_epi64(
+				_mm_unpacklo_epi32(p1, p2),
+				_mm_unpacklo_epi32(p3, p4)
+				)
+			);
 
 	}
-	x += cnt * 2;
-#endif
+#else
 	for (; x<=ex2; ++x) {
 		uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2;
 		Graphics::pixel_t pixel = colorTable[alpha];
@@ -50,6 +68,7 @@ void drawLine_noDither(
 		sum += d1;
 		d1 += 2 * invRadius2;
 	}
+#endif
 }
 
 void DrawRadialGradient(

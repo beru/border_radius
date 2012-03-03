@@ -33,27 +33,35 @@ int main(int argc, char* argv[])
 		distanceTable[i] = alpha;
 	}
 
+#if 0
 	Graphics::pixel_t colorTable[256+1];
 	for (int i=0; i<256; ++i) {
 		uint8_t v = 255 - i;
 		colorTable[i] = Graphics::MakePixel(v,v,v,v);
 	}
+#else
+	Graphics::pixel_t colorTable[1<<NSHIFTS];
+	for (int i=0; i<countof(colorTable); ++i) {
+		uint8_t v = 255 - (distanceTable[i]>>8);
+		colorTable[i] = Graphics::MakePixel(v,v,v,v);
+	}
+#endif
 	
 	//for (int i=0; i<1; ++i) {
 	//	Graphics::DrawDisc(240, 240, 480, -1);
 	//}
 	Graphics::ClippingRect clippingRect;
-	clippingRect.x = 100;
-	clippingRect.y = 100;
-	clippingRect.w = 800;
-	clippingRect.h = 900;
+	clippingRect.x = 0;
+	clippingRect.y = 0;
+	clippingRect.w = 1920;
+	clippingRect.h = 1080;
 	
 	Timer t;
-
+	
 #if 1
 	for (int i=0; i<1; ++i) {
 		Graphics::DrawRadialGradient(
-			512,512, 512*1.5, clippingRect,
+			1024,512, 512*4, clippingRect,
 			distanceTable, NSHIFTS,
 			0, 0,
 			colorTable,
@@ -65,7 +73,7 @@ int main(int argc, char* argv[])
 		0,0, Graphics::MakePixel(0,50,0,0),
 		1024,0, Graphics::MakePixel(0,10,0,0),
 		clippingRect,
-		true
+		false
 		);
 #endif
 	printf("%f\n", t.ElapsedSecond()*1000);

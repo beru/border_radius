@@ -5,8 +5,8 @@
 
 namespace Graphics {
 
-static const uint16_t WIDTH = 1024;
-static const uint16_t HEIGHT = 1024;
+static const uint16_t WIDTH = 1920;
+static const uint16_t HEIGHT = 1080;
 
 extern pixel_t global_lcd_framebuffer[HEIGHT][WIDTH];
 
