@@ -35,7 +35,8 @@ int main(int argc, char* argv[])
 
 	Graphics::pixel_t colorTable[256+1];
 	for (int i=0; i<256; ++i) {
-		colorTable[i] = Graphics::MakePixel(i,i,i,i);
+		uint8_t v = 255 - i;
+		colorTable[i] = Graphics::MakePixel(v,v,v,v);
 	}
 	
 	//for (int i=0; i<1; ++i) {
@@ -50,13 +51,13 @@ int main(int argc, char* argv[])
 	Timer t;
 
 #if 1
-	for (int i=0; i<100; ++i) {
+	for (int i=0; i<1; ++i) {
 		Graphics::DrawRadialGradient(
-			512,512, 512*4, clippingRect,
+			512,512, 512*1.5, clippingRect,
 			distanceTable, NSHIFTS,
 			0, 0,
 			colorTable,
-			true
+			false
 			);
 	}
 #else

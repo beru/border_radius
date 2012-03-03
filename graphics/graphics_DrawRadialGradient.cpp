@@ -2,6 +2,7 @@
 #include "graphics_impl_common.h"
 #include <math.h>
 #include <algorithm>
+#include <smmintrin.h>
 
 namespace Graphics {
 
@@ -11,6 +12,44 @@ void blendPixel(pixel_t& pixel, uint16_t alpha)
 	assert(alpha != 0);
 	assert(pixel == 0);
 	pixel = MakePixel(alpha,alpha,alpha,alpha);
+}
+
+static inline
+void drawLine_noDither(
+	int16_t x, int16_t ex2, uint16_t y,
+	const uint16_t* distanceTable, uint8_t shiftBits, uint8_t adjustShift2, const pixel_t* colorTable,
+	uint32_t sum, int32_t d1, uint32_t invRadius2
+	)
+{
+#if 0
+	__m128i* p = (__m128i*) ((int)getPixelPtr(x, y));// & (~15));
+	size_t cnt = (ex2 - x + 1) / 2;
+	uint32_t alpha;
+	__m128i sums = _mm_set_epi32(0, 0, sum+d1, sum);
+	__m128i d1s = _mm_set_epi32(0, 0, d1+d1+6*invRadius2, d1+d1+2*invRadius2);
+	__m128i d1p = _mm_set_epi32(0, 0, 8*invRadius2, 8*invRadius2);
+	for (size_t i=0; i<cnt; ++i) {
+		__m128i shifted = _mm_srli_epi32(sums, shiftBits);
+		sums = _mm_add_epi32(sums, d1s);
+		d1s = _mm_add_epi32(d1s, d1p);
+		
+		alpha = distanceTable[shifted.m128i_u32[0]] >> adjustShift2;
+		__m128i p1 = _mm_cvtsi32_si128(colorTable[alpha]);
+		alpha = distanceTable[shifted.m128i_u32[1]] >> adjustShift2;
+		__m128i p2 = _mm_cvtsi32_si128(colorTable[alpha]);
+		_mm_storel_epi64(p, _mm_unpacklo_epi32(p1, p2));
+		p = (__m128i*)((char*)p + 8);
+
+	}
+	x += cnt * 2;
+#endif
+	for (; x<=ex2; ++x) {
+		uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2;
+		Graphics::pixel_t pixel = colorTable[alpha];
+		Graphics::PutPixel(x, y, pixel);
+		sum += d1;
+		d1 += 2 * invRadius2;
+	}
 }
 
 void DrawRadialGradient(
@@ -107,13 +146,10 @@ void DrawRadialGradient(
 				d1 += 2 * invRadius2;
 			}
 		}else {
-			for (; x<=ex2; ++x) {
-				uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2;
-				Graphics::pixel_t pixel = colorTable[alpha];
-				Graphics::PutPixel(x, y, pixel);
-				sum += d1;
-				d1 += 2 * invRadius2;
-			}
+			drawLine_noDither(
+				x, ex2, y,
+				distanceTable, shiftBits, adjustShift2, colorTable,
+				sum, d1, invRadius2);
 		}
 	}
 }
