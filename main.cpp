@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
 	
-	static const uint8_t NSHIFTS = 12;
+	static const uint8_t NSHIFTS = 14;
 	uint16_t distanceTable[1<<NSHIFTS];
 	for (int i=0; i<countof(distanceTable); ++i) {
 		uint16_t alpha = sqrt((double)((uint64_t)i<<(32-NSHIFTS)));
@@ -35,10 +35,14 @@ int main(int argc, char* argv[])
 
 	Timer t;
 	
-#if 0
-	Graphics::pixel_t colorTable[256+1];
+#if 1
+	Graphics::pixel_t colorTable[256+8] = {0};
 	for (int i=0; i<256; ++i) {
 		uint8_t v = 255 - i;
+		colorTable[i] = Graphics::MakePixel(v,v,v,v);
+	}
+	for (int i=256; i<countof(colorTable); ++i) {
+		uint8_t v = 0;
 		colorTable[i] = Graphics::MakePixel(v,v,v,v);
 	}
 #else
@@ -61,11 +65,11 @@ int main(int argc, char* argv[])
 #if 1
 	for (int i=0; i<1; ++i) {
 		Graphics::DrawRadialGradient(
-			1024,512, 512*2, clippingRect,
+			1024.1, 512.1, 512*1, clippingRect,
 			distanceTable, NSHIFTS,
 			0, 0,
 			colorTable,
-			false
+			true
 			);
 	}
 #else

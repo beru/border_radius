@@ -18,7 +18,7 @@ static inline
 void drawLine_noDither(
 	int16_t x, int16_t ex2, uint16_t y,
 	const uint16_t* distanceTable, uint8_t shiftBits, uint8_t adjustShift2, const pixel_t* colorTable,
-	uint32_t sum, int32_t d1, uint32_t invRadius2
+	uint32_t sum, int32_t d1, uint32_t d1d
 	)
 {
 #if 1
@@ -32,7 +32,7 @@ void drawLine_noDither(
 		for (; x<xe; ++x) {
 			Graphics::PutPixel(x, y, colorTable[sum >> shiftBits]);
 			sum += d1;
-			d1 += 2 * invRadius2;
+			d1 += d1d;
 		}
 		p = (__m128i*) ((int)p & ~15);
 		++p;
@@ -40,10 +40,10 @@ void drawLine_noDither(
 	for (; x<=ex2; x+=2) {
 		__m128i p1 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
 		sum += d1;
-		d1 += 2 * invRadius2;
+		d1 += d1d;
 		__m128i p2 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
 		sum += d1;
-		d1 += 2 * invRadius2;
+		d1 += d1d;
 		
 		_mm_storel_epi64(p, _mm_unpacklo_epi32(p1, p2));
 		p = (__m128i*)((char*)p + 8);
@@ -53,7 +53,7 @@ void drawLine_noDither(
 		Graphics::pixel_t pixel = colorTable[sum >> shiftBits];
 		Graphics::PutPixel(x, y, pixel);
 		sum += d1;
-		d1 += 2 * invRadius2;
+		d1 += d1d;
 	}
 #endif
 #else
@@ -62,13 +62,13 @@ void drawLine_noDither(
 		Graphics::pixel_t pixel = colorTable[alpha];
 		Graphics::PutPixel(x, y, pixel);
 		sum += d1;
-		d1 += 2 * invRadius2;
+		d1 += d1d;
 	}
 #endif
 }
 
 void DrawRadialGradient(
-	int16_t cx, int16_t cy, uint16_t diameter,
+	float cx, float cy, float diameter,
 	const ClippingRect& clippingRect,
 	const uint16_t* distanceTable, uint8_t distanceTableShifts,
 	const pixel_t* pixelTable, uint8_t pixelTableShits,
@@ -79,30 +79,30 @@ void DrawRadialGradient(
 	if (diameter < 2) {
 		return;
 	}
-	const uint16_t radius = diameter / 2;
-	const uint32_t radius2 = (diameter * diameter) / 4;
-	int32_t sy = cy - radius;
-	int32_t ey = sy + diameter;
-	int32_t sx = cx - radius;
-	int32_t ex = sx + diameter;
+	const float radius = diameter / 2;
+	const float radius2 = (diameter * diameter) / 4;
+	float sy = cy - radius;
+	float ey = sy + diameter;
+	float sx = cx - radius;
+	float ex = sx + diameter;
 
-	sy = max(sy, (int32_t)clippingRect.y);
-	sy = max(sy, 0);
+	sy = max<float>(sy, clippingRect.y);
+	sy = max<float>(sy, 0);
 	
-	ey = min(ey, clippingRect.y+clippingRect.h);
-	ey = min(ey, (int32_t)HEIGHT);
+	ey = min<float>(ey, clippingRect.y+clippingRect.h);
+	ey = min<float>(ey, HEIGHT);
 	
-	sx = max(sx, (int32_t)clippingRect.x);
-	sx = max(sx, 0);
+	sx = max<float>(sx, clippingRect.x);
+	sx = max<float>(sx, 0);
 
-	ex = min(ex, clippingRect.x+clippingRect.w);
-	ex = min(ex, (int32_t)WIDTH);
+	ex = min<float>(ex, clippingRect.x+clippingRect.w);
+	ex = min<float>(ex, WIDTH);
 	
 	// 中心から描画領域の端までの距離の半径に対しての比率を出す。
 	// 中心点からの描画領域の左端の距離と右端の距離のうち、長い方を求める。
-	uint16_t dx = std::max(abs(cx - sx), abs(cx - ex));
-	uint16_t dy = std::max(abs(cy - sy), abs(cy - ey));
-	uint16_t lenRatio2 = radius2 / (dx*dx+dy*dy);
+	float dx = std::max(abs(cx - sx), abs(cx - ex));
+	float dy = std::max(abs(cy - sy), abs(cy - ey));
+	float lenRatio2 = radius2 / (dx*dx+dy*dy);
 	uint8_t adjustShift1 = 0;
 	uint8_t adjustShift2 = 0;
 	if (lenRatio2 >= 8*8) {
@@ -119,7 +119,6 @@ void DrawRadialGradient(
 		adjustShift2 = 1;
 	}
 	adjustShift2 += 8;
-	const uint32_t invRadius2 = (255ull << (24+adjustShift1)) / radius2;
 	// ordered dithering table 4x4
 	uint16_t thresholds[4][4] = {
 		1,9,3,11,
@@ -131,26 +130,26 @@ void DrawRadialGradient(
 	for (uint8_t i=0; i<16; ++i) {
 		pt[i] <<= adjustShift2 - 3;
 	}
-	
-	const uint8_t shiftBits = (32 - distanceTableShifts);
+	const uint32_t invRadius2 = (255ull << (24+adjustShift1)) / radius2;
+	const uint8_t shiftBits = (28 - distanceTableShifts) + 4;
 	const uint16_t mask = (1<<distanceTableShifts) - 1;
 	for (uint16_t y=sy; y<=ey; ++y) {
-		const int16_t dy = cy - y;
-		const uint32_t dy2 = dy * dy;
-		const uint32_t dy2a = dy2 * invRadius2;
-		
-		int16_t dx = sqrt((double)radius2 - dy2);// + 0.5;
-		const int16_t sx2 = max<int16_t>(sx, cx-dx);
-		const int16_t ex2 = min<int16_t>(ex, cx+dx);
+		const float dy = cy - y;
+		const float dy2 = dy * dy;
+		float dx = sqrt((double)radius2 - dy2);
+		const int16_t sx2 = max(sx, cx-dx) + 1;
+		const int16_t ex2 = min(ex, cx+dx) - 1;
 		
 		dx = cx - sx2;
-		int32_t xs = dx * dx * invRadius2;
+		float dx2 = dx * dx;
+
+		uint32_t sum = (dy2 + dx2) * invRadius2;
 		int32_t d1 = (dx * -2 + 1) * invRadius2;
-		int16_t x = sx2;
-		uint32_t sum = dy2a + xs;
+		uint32_t d1d = invRadius2 * 2;
 		
 		// TODO: 縁の描画はピクセル占有率等も考慮して行う
 		
+		int16_t x = sx2;
 		if (dithering) {
 			const uint16_t* pThreshold = thresholds[y&3u];
 			for (; x<=ex2; ++x) {
@@ -158,13 +157,13 @@ void DrawRadialGradient(
 				Graphics::pixel_t pixel = colorTable[alpha];
 				Graphics::PutPixel(x, y, pixel);
 				sum += d1;
-				d1 += 2 * invRadius2;
+				d1 += d1d;
 			}
 		}else {
 			drawLine_noDither(
 				x, ex2, y,
 				distanceTable, shiftBits, adjustShift2, colorTable,
-				sum, d1, invRadius2);
+				sum, d1, d1d);
 		}
 	}
 }
