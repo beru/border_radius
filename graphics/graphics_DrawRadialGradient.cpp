@@ -39,7 +39,6 @@ void drawLine_noDither(
 		p = (__m128i*) ((int)p & ~15);
 		++p;
 	}
-	__m128i v;
 	__m128i vsum = _mm_setr_epi32(
 		sum,
 		sum + d1,
@@ -53,26 +52,23 @@ void drawLine_noDither(
 		);
 	__m128i vd1d = _mm_set1_epi32(4*4*d1d);
 	for (; x<=ex2; x+=4) {
-		__m128i p0 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
-		sum += d1;
-		d1 += d1d;
-		__m128i p1 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
-		sum += d1;
-		d1 += d1d;
-		__m128i v0 = _mm_unpacklo_epi32(p0, p1);
-
-		__m128i p2 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
-		sum += d1;
-		d1 += d1d;
-		__m128i p3 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
-		sum += d1;
-		d1 += d1d;
-
+		__m128i vsum2 = _mm_srli_epi32(vsum, shiftBits);
 		vsum = _mm_add_epi32(vsum, vd1);
 		vd1 = _mm_add_epi32(vd1, vd1d);
-
+#if 1
+		__m128i v = _mm_cvtsi32_si128(colorTable[_mm_cvtsi128_si32(vsum2)]);
+		v = _mm_insert_epi32(v, colorTable[_mm_extract_epi32(vsum2, 1)], 1);
+		v = _mm_insert_epi32(v, colorTable[_mm_extract_epi32(vsum2, 2)], 2);
+		v = _mm_insert_epi32(v, colorTable[_mm_extract_epi32(vsum2, 3)], 3);
+#else // SSE2
+		__m128i p0 = _mm_cvtsi32_si128(colorTable[_mm_cvtsi128_si32(vsum2)]); vsum2 = _mm_srli_si128(vsum2, 4);
+		__m128i p1 = _mm_cvtsi32_si128(colorTable[_mm_cvtsi128_si32(vsum2)]); vsum2 = _mm_srli_si128(vsum2, 4);
+		__m128i p2 = _mm_cvtsi32_si128(colorTable[_mm_cvtsi128_si32(vsum2)]); vsum2 = _mm_srli_si128(vsum2, 4);
+		__m128i p3 = _mm_cvtsi32_si128(colorTable[_mm_cvtsi128_si32(vsum2)]);
+		__m128i v0 = _mm_unpacklo_epi32(p0, p1);
 		__m128i v1 = _mm_unpacklo_epi32(p2, p3);
 		__m128i v = _mm_unpacklo_epi64(v0, v1);
+#endif
 		_mm_stream_si128(p++, v);
 	}
 #else
