@@ -67,7 +67,6 @@ int main(int argc, char* argv[])
 		Graphics::DrawRadialGradient(
 			1024.1, 512.1, 512*2, clippingRect,
 			distanceTable, NSHIFTS,
-
 			colorTable,
 			false
 			);
