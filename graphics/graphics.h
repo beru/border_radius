@@ -47,7 +47,6 @@ void DrawRadialGradient(
 	float cx, float cy, float diameter,
 	const ClippingRect& clippingRect,
 	const uint16_t* distanceTable, uint8_t distanceTableShifts,
-	const pixel_t* pixelTable, uint8_t pixelTableShits,
 	const pixel_t* colorTable,
 	bool dithering);
 

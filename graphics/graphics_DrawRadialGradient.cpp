@@ -14,11 +14,11 @@ void blendPixel(pixel_t& pixel, uint16_t alpha)
 	pixel = MakePixel(alpha,alpha,alpha,alpha);
 }
 
-static inline
+inline
 void drawLine_noDither(
 	int16_t x, int16_t ex2, uint16_t y,
 	const uint16_t* distanceTable, uint8_t shiftBits, uint8_t adjustShift2, const pixel_t* colorTable,
-	uint32_t sum, int32_t d1, uint32_t d1d
+	uint32_t sum, int32_t d1, const uint32_t d1d
 	)
 {
 #if 1
@@ -29,24 +29,51 @@ void drawLine_noDither(
 	if (surplus) {
 		surplus = (16 - surplus) / 4;
 		int16_t xe = x+surplus;
+		uint32_t* p2 = (uint32_t*)p;
 		for (; x<xe; ++x) {
-			Graphics::PutPixel(x, y, colorTable[sum >> shiftBits]);
+			*p2 = colorTable[sum >> shiftBits];
+			++p2;
 			sum += d1;
 			d1 += d1d;
 		}
 		p = (__m128i*) ((int)p & ~15);
 		++p;
 	}
-	for (; x<=ex2; x+=2) {
+	__m128i v;
+	__m128i vsum = _mm_setr_epi32(
+		sum,
+		sum + d1,
+		sum + d1 + d1+d1d,
+		sum + d1 + d1+d1d + d1+2*d1d);
+	__m128i vd1 = _mm_setr_epi32(
+		      d1 + d1+d1d + d1+2*d1d + d1+3*d1d,
+		           d1+d1d + d1+2*d1d + d1+3*d1d + d1+4*d1d,
+		                    d1+2*d1d + d1+3*d1d + d1+4*d1d + d1+5*d1d,
+		                               d1+3*d1d + d1+4*d1d + d1+5*d1d + d1+6*d1d
+		);
+	__m128i vd1d = _mm_set1_epi32(4*4*d1d);
+	for (; x<=ex2; x+=4) {
+		__m128i p0 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
+		sum += d1;
+		d1 += d1d;
 		__m128i p1 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
 		sum += d1;
 		d1 += d1d;
+		__m128i v0 = _mm_unpacklo_epi32(p0, p1);
+
 		__m128i p2 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
 		sum += d1;
 		d1 += d1d;
-		
-		_mm_storel_epi64(p, _mm_unpacklo_epi32(p1, p2));
-		p = (__m128i*)((char*)p + 8);
+		__m128i p3 = _mm_cvtsi32_si128(colorTable[sum >> shiftBits]);
+		sum += d1;
+		d1 += d1d;
+
+		vsum = _mm_add_epi32(vsum, vd1);
+		vd1 = _mm_add_epi32(vd1, vd1d);
+
+		__m128i v1 = _mm_unpacklo_epi32(p2, p3);
+		__m128i v = _mm_unpacklo_epi64(v0, v1);
+		_mm_stream_si128(p++, v);
 	}
 #else
 	for (; x<=ex2; ++x) {
@@ -71,7 +98,6 @@ void DrawRadialGradient(
 	float cx, float cy, float diameter,
 	const ClippingRect& clippingRect,
 	const uint16_t* distanceTable, uint8_t distanceTableShifts,
-	const pixel_t* pixelTable, uint8_t pixelTableShits,
 	const pixel_t* colorTable,
 	bool dithering
 	)
@@ -136,7 +162,7 @@ void DrawRadialGradient(
 	for (uint16_t y=sy; y<=ey; ++y) {
 		const float dy = cy - y;
 		const float dy2 = dy * dy;
-		float dx = sqrt((double)radius2 - dy2);
+		float dx = sqrt(radius2 - dy2);
 		const int16_t sx2 = max(sx, cx-dx) + 1;
 		const int16_t ex2 = min(ex, cx+dx) - 1;
 		
@@ -148,7 +174,6 @@ void DrawRadialGradient(
 		uint32_t d1d = invRadius2 * 2;
 		
 		// TODO: 縁の描画はピクセル占有率等も考慮して行う
-		
 		int16_t x = sx2;
 		if (dithering) {
 			const uint16_t* pThreshold = thresholds[y&3u];
