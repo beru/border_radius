@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
 	
-	static const uint8_t NSHIFTS = 12;
+	static const uint8_t NSHIFTS = 11;
 	uint16_t distanceTable[1<<NSHIFTS];
 	for (int i=0; i<countof(distanceTable); ++i) {
 		uint16_t alpha = sqrt((double)((uint64_t)i<<(32-NSHIFTS)));

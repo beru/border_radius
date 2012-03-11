@@ -7,14 +7,6 @@
 namespace Graphics {
 
 inline
-void blendPixel(pixel_t& pixel, uint16_t alpha)
-{
-	assert(alpha != 0);
-	assert(pixel == 0);
-	pixel = MakePixel(alpha,alpha,alpha,alpha);
-}
-
-inline
 void drawLine_noDither(
 	int16_t x, int16_t ex2, uint16_t y,
 	const uint16_t* distanceTable, uint8_t shiftBits, uint8_t adjustShift2, const pixel_t* colorTable,
@@ -55,6 +47,7 @@ void drawLine_noDither(
 		__m128i vsum2 = _mm_srli_epi32(vsum, shiftBits);
 		vsum = _mm_add_epi32(vsum, vd1);
 		vd1 = _mm_add_epi32(vd1, vd1d);
+#if 0 // SSE4
 		__m128i v = _mm_unpacklo_epi64(
 			_mm_unpacklo_epi32(
 				_mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_cvtsi128_si32(vsum2))),
@@ -63,9 +56,16 @@ void drawLine_noDither(
 				_mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_extract_epi32(vsum2, 2))),
 				_mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_extract_epi32(vsum2, 3))))
 		);
+#else // SSE2
+		__m128i p0 = _mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_cvtsi128_si32(vsum2))); vsum2 = _mm_srli_si128(vsum2, 4);
+		__m128i p1 = _mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_cvtsi128_si32(vsum2))); vsum2 = _mm_srli_si128(vsum2, 4);
+		__m128i p2 = _mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_cvtsi128_si32(vsum2))); vsum2 = _mm_srli_si128(vsum2, 4);
+		__m128i p3 = _mm_castps_si128(_mm_load_ss((float*)colorTable + _mm_cvtsi128_si32(vsum2)));
+		__m128i v = _mm_unpacklo_epi64(_mm_unpacklo_epi32(p0, p1), _mm_unpacklo_epi32(p2, p3));
+#endif
 		_mm_stream_si128(p++, v);
 	}
-#else
+#else // Scalar
 	for (; x<=ex2; ++x) {
 		Graphics::pixel_t pixel = colorTable[sum >> shiftBits];
 		Graphics::PutPixel(x, y, pixel);
@@ -73,7 +73,7 @@ void drawLine_noDither(
 		d1 += d1d;
 	}
 #endif
-#else
+#else // Table Lookup 2times
 	for (; x<=ex2; ++x) {
 		uint32_t alpha = distanceTable[sum >> shiftBits] >> adjustShift2;
 		Graphics::pixel_t pixel = colorTable[alpha];
@@ -82,6 +82,13 @@ void drawLine_noDither(
 		d1 += d1d;
 	}
 #endif
+}
+
+inline void SSESqrt_Recip_Times_X( float * __restrict pOut, float * __restrict pIn )
+{
+   __m128 in = _mm_load_ss( pIn );
+   _mm_store_ss( pOut, _mm_mul_ss( in, _mm_rsqrt_ss( in ) ) );
+   // compiles to movss, movaps, rsqrtss, mulss, movss
 }
 
 void DrawRadialGradient(
@@ -152,12 +159,15 @@ void DrawRadialGradient(
 	for (uint16_t y=sy; y<=ey; ++y) {
 		const float dy = cy - y;
 		const float dy2 = dy * dy;
-		float dx = sqrt(radius2 - dy2);
+		float dx2 = radius2 - dy2;
+		float dx;
+//		SSESqrt_Recip_Times_X(&dx, &dx2);
+		dx = sqrt(dx2);
 		const int16_t sx2 = max(sx, cx-dx) + 1;
 		const int16_t ex2 = min(ex, cx+dx) - 1;
 		
 		dx = cx - sx2;
-		float dx2 = dx * dx;
+		dx2 = dx * dx;
 
 		uint32_t sum = (dy2 + dx2) * invRadius2;
 		int32_t d1 = (dx * -2 + 1) * invRadius2;
