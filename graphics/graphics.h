@@ -50,6 +50,14 @@ void DrawRadialGradient(
 	const pixel_t* colorTable,
 	bool dithering);
 
+void DrawCircleGradient(
+	float cx, float cy, float diameter1, float diameter2,
+	const ClippingRect& clippingRect,
+	const uint16_t* distanceTable, uint8_t distanceTableShifts,
+	const pixel_t* colorTable,
+	bool dithering);
+
+
 } // namespace Graphics
 
 #endif // ifndef GRAPHICS_H_INCLUDED__
