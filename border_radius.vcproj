@@ -388,6 +388,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphics\graphics_DrawCircleAA.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\graphics_DrawLinearGradient.cpp"
 				>
 			</File>
@@ -397,6 +401,10 @@
 			</File>
 			<File
 				RelativePath=".\graphics\graphics_DrawRectangle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\graphics\graphics_DrawTriangle.cpp"
 				>
 			</File>
 			<File

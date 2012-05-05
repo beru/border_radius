@@ -25,6 +25,8 @@ int main(int argc, char* argv[])
 	}
 #endif
 //	Graphics::DrawFilledCircle(120, 120, 100, -1);
+
+	Graphics::DrawFilledCircleAA(400, 400, 390, -1);
 	
 	static const uint8_t NSHIFTS = 11;
 	uint16_t distanceTable[1<<NSHIFTS];
@@ -62,23 +64,33 @@ int main(int argc, char* argv[])
 	clippingRect.w = 1920;
 	clippingRect.h = 1080;
 	
-#if 1
-	for (int i=0; i<1; ++i) {
+	for (int i=0; i<10; ++i) {
+#if 0
 		Graphics::DrawRadialGradient(
-			1024.1, 512.1, 512*2, clippingRect,
+			1024,512, 512*4, clippingRect,
 			distanceTable, NSHIFTS,
 			colorTable,
 			false
 			);
-	}
-#else
-	Graphics::DrawLinearGradient(
-		0,0, Graphics::MakePixel(0,50,0,0),
-		1024,0, Graphics::MakePixel(0,10,0,0),
-		clippingRect,
-		false
-		);
+#elif 0
+		Graphics::DrawLinearGradient(
+			0,0, Graphics::MakePixel(0,50,0,0),
+			1024,0, Graphics::MakePixel(0,10,0,0),
+			clippingRect,
+			false
+			);
+#elif 0
+		Graphics::Vertex v1,v2,v3;
+		v1.x = 300;
+		v1.y = 100;
+		v2.x = 100;
+		v2.y = 500;
+		v3.x = 500;
+		v3.y = 700;
+		Graphics::DrawTriangle(v1,v2,v3);
 #endif
+	}
+	
 	printf("%f\n", t.ElapsedSecond()*1000);
 	
 	return 0;

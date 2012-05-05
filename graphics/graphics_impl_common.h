@@ -68,6 +68,13 @@ T min(T a, T b)
 	return a<b ? a : b;
 }
 
+template <typename T>
+static inline
+T min(T a, T b, T c)
+{
+	return min(min(a,b),c);
+}
+
 #if 0
 static inline
 int min(int x, int y)
@@ -91,6 +98,13 @@ static inline
 T max(T a, T b)
 {
 	return a>b ? a : b;
+}
+
+template <typename T>
+static inline
+T max(T a, T b, T c)
+{
+	return max(max(a,b),c);
 }
 
 template <typename T>

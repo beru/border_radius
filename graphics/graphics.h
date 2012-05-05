@@ -37,6 +37,7 @@ void DrawRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, pixel_t color, 
 
 void DrawCircle(int16_t cx, int16_t cy, uint16_t diameter, pixel_t color);
 void DrawFilledCircle(int16_t cx, int16_t cy, uint16_t diameter, pixel_t color);
+void DrawFilledCircleAA(float cx, float cy, float diameter, pixel_t color);
 
 void DrawLinearGradient(int16_t x1, int16_t y1, pixel_t v1,
 						int16_t x2, int16_t y2, pixel_t v2,
@@ -57,6 +58,13 @@ void DrawCircleGradient(
 	const pixel_t* colorTable,
 	bool dithering);
 
+struct Vertex
+{
+	float x;
+	float y;
+};
+
+void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
 
 } // namespace Graphics
 
