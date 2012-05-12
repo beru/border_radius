@@ -4,6 +4,27 @@
 
 #include <vector>
 
+namespace {
+
+float lengths[1024];
+float areas[1024];
+double sum = 0;
+double deg45Len = sqrt(2.0) / 2;
+
+// 45度までを同じ高さで等分した際の、長さと面積を算出して表に入れる。
+void calcTable()
+{
+	for (int i=1; i<=countof(lengths); ++i) {
+		double y = (deg45Len * i) / countof(lengths);
+		double x = 1 - sqrt(1 - y*y);
+		sum += x;
+		lengths[i-1] = x;
+		areas[i-1] = sum;
+	}
+}
+
+} // namespace
+
 namespace Graphics {
 
 void DrawFilledCircleAA(float cx, float cy, float diameter, pixel_t color)
