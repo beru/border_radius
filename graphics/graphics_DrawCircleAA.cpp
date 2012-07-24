@@ -108,5 +108,6 @@ void DrawFilledCircleAA(float cx, float cy, float diameter, pixel_t color)
 	
 }
 
+
 } // namespace Graphics
 
