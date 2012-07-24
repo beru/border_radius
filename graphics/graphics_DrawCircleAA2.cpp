@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "graphics.h"
+#include "graphics_impl_common.h"
 
 /*
 
@@ -15,8 +16,8 @@
 
 struct CircleLine
 {
-	float pos;	// 円の端までの距離。
-	float area;	// 円の面積の総和。2点間の差で面積を区間の面積を求められるので、エッジの面積を算出可能
+	double pos;	// 円の端までの距離。
+	double area;	// 円の面積の総和。2点間の差で面積を区間の面積を求められるので、エッジの面積を算出可能
 };
 
 std::vector<CircleLine> circleLines; // √2/2 * 256 でOK (√2 = 1.4142135623730950488016887242097)
@@ -24,44 +25,115 @@ std::vector<CircleLine> circleLines; // √2/2 * 256 でOK (√2 = 1.41421356237309
 #define M_PI 3.14159265358979 /* 円周率 */
 #define rad2deg(a) ( (a) / M_PI * 180.0 ) /* rad を deg に */
 
+static const double xylen45deg = sqrt(2.0)/2;	// 円45度位置の中心からの縦横長さ
+
 static
-void initTable(int count)
+void initTable(int tableRadius)
 {
-	float xylen45deg = sqrt(2.0)/2;	// 円45度位置の中心からの縦横長さ
-	
-	circleLines.resize(count * xylen45deg + 3);
+	circleLines.resize(tableRadius * xylen45deg + 3);
 	const float radius = 1.0;
 	float rr = radius * radius;
 	float CIRCLE_AREA = M_PI * rr;
-	float areaSum = 0;
 	static const double RADIAN_CIRCUMFERENCE = 2 * M_PI;
 	for (int i=0; i<circleLines.size(); ++i) {
-		float y = (float)i / count;
-		float yy = y * y;
-		float xx = rr - yy;
-		float x = sqrt(xx); // y位置における円の接線のx位置
-//		float x8 = xylen45deg + (radius - xylen45deg) * (xylen45deg-y) / xylen45deg; // y位置における正8角形の辺の横位置
-		float radian = asin(y/radius);
+		double y = (double)i / tableRadius;
+		double yy = y * y;
+		double xx = rr - yy;
+		double x = sqrt(xx); // y位置における円の接線のx位置
+//		double x8 = xylen45deg + (radius - xylen45deg) * (xylen45deg-y) / xylen45deg; // y位置における正8角形の辺の横位置
+		double radian = asin(y/radius);
 		CircleLine& cl = circleLines[i];
 		cl.pos = x;
-		float sectorArea = radian / RADIAN_CIRCUMFERENCE * CIRCLE_AREA;
-		float triangleArea = x*y/2;
-		float area = sectorArea + triangleArea;
-		areaSum += area;
-		cl.area = areaSum;
-		float deg = rad2deg(radian);
-		float hoge = 0;
+		double sectorArea = radian / RADIAN_CIRCUMFERENCE * CIRCLE_AREA;
+		double triangleArea = x*y/2;
+		cl.area = sectorArea + triangleArea;
+		double deg = rad2deg(radian);
+		double hoge = 0;
 	}
 }
 
 namespace Graphics {
+
+static const int TABLE_RADIUS = 256;
+
+void drawHalf(
+	float cx,
+	float cy,
+	double diameter,
+	pixel_t color,
+	double direction
+	)
+{
+	double radius = diameter / 2.0;
+	double rr = radius * radius;
+	double ratioRadius = TABLE_RADIUS / radius;
+
+	CircleLine prevCl = circleLines[0];
+	double prevXPlus = cx + prevCl.pos * radius;
+	double prevXMinus = cx - prevCl.pos * radius;
+	for (int i=1; i<radius*xylen45deg+1; ++i) {
+		double y0 = cy + i * direction;
+		double i2 = i * ratioRadius;
+		CircleLine cl0 = circleLines[i2];
+		CircleLine cl1 = circleLines[i2 + 1];
+		CircleLine cl;
+		double i2Frac = i2 - (int)i2;
+		cl.pos = cl0.pos + (cl1.pos - cl0.pos) * i2Frac;
+		cl.area = cl0.area + (cl1.area - cl0.area) * i2Frac;
+		double xScaled = cl.pos * radius;
+		double xMinus = cx - xScaled;
+		double xPlus = cx + xScaled;
+		DrawHorizontalLine(xMinus+1, xPlus, y0, color);
+		double areaDiff = cl.area - prevCl.area;
+		// 0～ -45
+		// X座標の整数値が異なる場合は横2pixelに跨る。
+		if ((int)xPlus != (int)prevXPlus) {
+			double xFrac = xPlus - (int)xPlus;
+			double prevXFrac = prevXPlus - (int)prevXPlus;
+			double xDiff = prevXPlus - xPlus;
+			double rightArea = (areaDiff * rr - xScaled) * (prevXFrac / xDiff);
+			double leftArea = (areaDiff * rr - xScaled - rightArea);
+			double leftRectArea = xFrac;
+			leftArea += leftRectArea;
+			assert(leftArea <= 1.0);
+			assert(rightArea <= 1.0);
+			putPixel(xPlus, y0, leftArea*255);
+			putPixel(xPlus+1, y0, rightArea*255);
+		}else {
+			double remain = areaDiff * rr - ((int)xPlus - cx);
+			assert(remain <= 1.0);
+			putPixel(xPlus, y0, 255*remain);
+		}
+		// 180～225
+		if ((int)xMinus != (int)prevXMinus) {
+			double xFrac = 1.0 - (xMinus - (int)xMinus);
+			double prevXFrac = 1.0 - (prevXMinus - (int)prevXMinus);
+			double xDiff = xMinus - prevXMinus;
+			double leftArea = (areaDiff * rr - xScaled) * (prevXFrac / xDiff);
+			double rightArea = (areaDiff * rr - xScaled - leftArea);
+			double rightRectArea = xFrac;
+			rightArea += rightRectArea;
+			assert(leftArea <= 1.0);
+			assert(rightArea <= 1.0);
+			putPixel(xMinus-1, y0, leftArea*255);
+			putPixel(xMinus, y0, rightArea*255);
+		}else {
+			double remain = areaDiff * rr - (cx - (int)(xMinus+1.0));
+			assert(remain <= 1.0);
+			putPixel(xMinus, y0, 255*remain);
+		}
+		prevCl = cl;
+		prevXPlus = xPlus;
+		prevXMinus = xMinus;
+	}
+}
 
 void DrawFilledCircleAA2(float cx, float cy, float diameter, pixel_t color)
 {
 	static bool inited;
 	if (!inited) {
 		inited = true;
-		initTable(256);
+		initTable(TABLE_RADIUS);
 	}
 	
 	// あるラインの円の縁を描く際に、テーブルの2点間の面積の差で区間の面積が求まる。
@@ -69,7 +141,10 @@ void DrawFilledCircleAA2(float cx, float cy, float diameter, pixel_t color)
 	// 縁の部分のピクセル占有度を求める際に、エッジの面積と、場合によっては長方形の一部を利用する。
 	// 縁は1ピクセルだけの場合もあれば、2ピクセルに跨る場合もある。
 	
-	
+	// 下側
+	drawHalf(cx, cy, diameter, color, 1.0);
+	// 上側
+	drawHalf(cx, cy+1, diameter, color, -1.0);
 }
 
 } // namespace Graphics {
