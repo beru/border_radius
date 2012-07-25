@@ -64,27 +64,33 @@ void drawHalf(
 	double direction
 	)
 {
+	// あるラインの円の縁を描く際に、テーブルの2点間の面積の差で区間の面積が求まる。
+	// 区間の面積から長方形部分を引く事によってエッジの面積が求まる。
+	// 縁の部分のピクセル占有度を求める際に、エッジの面積と、場合によっては長方形の一部を利用する。
+	// 縁は1ピクセルだけの場合もあれば、2ピクセルに跨る場合もある。
+	
 	double radius = diameter / 2.0;
 	double rr = radius * radius;
 	double ratioRadius = TABLE_RADIUS / radius;
 
-	CircleLine prevCl = circleLines[0];
-	double prevXPlus = cx + prevCl.pos * radius;
-	double prevXMinus = cx - prevCl.pos * radius;
+	CircleLine cl = circleLines[0];
+	double xScaled = cl.pos * radius;
+	double prevXPlus = cx + xScaled;
+	double prevXMinus = cx - xScaled;
+	double prevArea = cl.area;
 	for (int i=1; i<radius*xylen45deg+1; ++i) {
-		double y0 = cy + i * direction;
-		double i2 = i * ratioRadius;
-		CircleLine cl0 = circleLines[i2];
-		CircleLine cl1 = circleLines[i2 + 1];
-		CircleLine cl;
-		double i2Frac = i2 - (int)i2;
-		cl.pos = cl0.pos + (cl1.pos - cl0.pos) * i2Frac;
-		cl.area = cl0.area + (cl1.area - cl0.area) * i2Frac;
-		double xScaled = cl.pos * radius;
+		double py = cy + i * direction;
+		double ty = i * ratioRadius;
+		double tyFrac = ty - (int)ty;
+		CircleLine cl0 = circleLines[ty];
+		CircleLine cl1 = circleLines[ty + 1];
+		double pos = cl0.pos + (cl1.pos - cl0.pos) * tyFrac;
+		double area = cl0.area + (cl1.area - cl0.area) * tyFrac;
+		double xScaled = pos * radius;
 		double xMinus = cx - xScaled;
 		double xPlus = cx + xScaled;
-		DrawHorizontalLine(xMinus+1, xPlus, y0, color);
-		double areaDiff = cl.area - prevCl.area;
+		double areaDiff = area - prevArea;
+		DrawHorizontalLine(xMinus+1, xPlus, py, color);
 		// 0～ -45
 		// X座標の整数値が異なる場合は横2pixelに跨る。
 		if ((int)xPlus != (int)prevXPlus) {
@@ -97,12 +103,12 @@ void drawHalf(
 			leftArea += leftRectArea;
 			assert(leftArea <= 1.0);
 			assert(rightArea <= 1.0);
-			putPixel(xPlus, y0, leftArea*255);
-			putPixel(xPlus+1, y0, rightArea*255);
+			putPixel(xPlus, py, leftArea*255);
+			putPixel(xPlus+1, py, rightArea*255);
 		}else {
 			double remain = areaDiff * rr - ((int)xPlus - cx);
 			assert(remain <= 1.0);
-			putPixel(xPlus, y0, 255*remain);
+			putPixel(xPlus, py, 255*remain);
 		}
 		// 180～225
 		if ((int)xMinus != (int)prevXMinus) {
@@ -115,14 +121,14 @@ void drawHalf(
 			rightArea += rightRectArea;
 			assert(leftArea <= 1.0);
 			assert(rightArea <= 1.0);
-			putPixel(xMinus-1, y0, leftArea*255);
-			putPixel(xMinus, y0, rightArea*255);
+			putPixel(xMinus-1, py, leftArea*255);
+			putPixel(xMinus, py, rightArea*255);
 		}else {
 			double remain = areaDiff * rr - (cx - (int)(xMinus+1.0));
 			assert(remain <= 1.0);
-			putPixel(xMinus, y0, 255*remain);
+			putPixel(xMinus, py, 255*remain);
 		}
-		prevCl = cl;
+		prevArea = area;
 		prevXPlus = xPlus;
 		prevXMinus = xMinus;
 	}
@@ -135,11 +141,6 @@ void DrawFilledCircleAA2(float cx, float cy, float diameter, pixel_t color)
 		inited = true;
 		initTable(TABLE_RADIUS);
 	}
-	
-	// あるラインの円の縁を描く際に、テーブルの2点間の面積の差で区間の面積が求まる。
-	// 区間の面積から長方形部分を引く事によってエッジの面積が求まる。
-	// 縁の部分のピクセル占有度を求める際に、エッジの面積と、場合によっては長方形の一部を利用する。
-	// 縁は1ピクセルだけの場合もあれば、2ピクセルに跨る場合もある。
 	
 	// 下側
 	drawHalf(cx, cy, diameter, color, 1.0);

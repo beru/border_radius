@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 	bs.width = 2;
 	bs.color = 0x2FFFAF;
 	
-	Graphics::DrawFilledCircleAA2(412.33,401.5,250,0xFFFFFFFF);
+	Graphics::DrawFilledCircleAA2(412.33, 401.5, 550.4, 0xFFFFFFFF);
 //	Graphics::DrawLinearGradient(110,10,0xAAAA00, 300,200,0x00AAAA);
 #if 0
 	for (int i=0; i<20; ++i) {
