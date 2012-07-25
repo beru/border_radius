@@ -121,6 +121,12 @@ T abs(T a)
 	return a<0 ? -a:a;
 }
 
+inline
+double frac(double v)
+{
+	return v - (int)v;
+}
+
 // http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf
 static inline
 float InvSqrt(float x)

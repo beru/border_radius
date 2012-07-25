@@ -42,7 +42,7 @@ void fillSolidRectangle(int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t c
 	
 	pixel_t* ptr = getPixelPtr(x2, y2);
 	pixel_t sc = to_pixel_t(color);
-	for (uint16_t iy=0; iy<h2; ++iy) {
+	for (int iy=0; iy<h2; ++iy) {
 		for (uint16_t ix=0; ix<w2; ++ix) {
 			ptr[ix] = sc;
 		}

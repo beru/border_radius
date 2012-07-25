@@ -13,7 +13,11 @@ int main(int argc, char* argv[])
 	bs.width = 2;
 	bs.color = 0x2FFFAF;
 	
-	Graphics::DrawFilledCircleAA2(412.33, 401.5, 550.4, 0xFFFFFFFF);
+	Timer t;
+	
+	for (int i=0; i<20; ++i) {
+		Graphics::DrawFilledCircleAA2(312.33, 401.5, 450.4, 0xFFFFFFFF);
+	}
 //	Graphics::DrawLinearGradient(110,10,0xAAAA00, 300,200,0x00AAAA);
 #if 0
 	for (int i=0; i<20; ++i) {
@@ -37,8 +41,6 @@ int main(int argc, char* argv[])
 		distanceTable[i] = alpha;
 	}
 
-	Timer t;
-	
 #if 0
 	Graphics::pixel_t colorTable[256+8] = {0};
 	for (int i=0; i<256; ++i) {

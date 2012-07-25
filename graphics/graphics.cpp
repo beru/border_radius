@@ -23,7 +23,7 @@ void DrawHorizontalLine(int16_t x1, int16_t x2, int16_t y, pixel_t color)
 	}
 	pixel_t* ptr = getPixelPtr(x1, y);
 	pixel_t sc = to_pixel_t(color);
-	for (uint16_t x=x1; x<x2; ++x) {
+	for (uint32_t x=x1; x<x2; ++x) {
 		*ptr = sc;
 		++ptr;
 	}
@@ -38,7 +38,7 @@ void DrawVerticalLine(int16_t x, int16_t y1, int16_t y2, pixel_t color)
 	}
 	pixel_t* ptr = getPixelPtr(x, y1);
 	pixel_t sc = to_pixel_t(color);
-	for (uint16_t y=y1; y<y2; ++y) {
+	for (int y=y1; y<y2; ++y) {
 		*ptr = sc;
 		OffsetPtr(ptr, getLineOffset());
 	}
